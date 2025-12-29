@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+venv/
+env/
+ENV/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Data files (too large for Git)
+data/*.csv
+data/*.json
+*.csv
+*.json
+!conference-app/package*.json
+!conference-app/tsconfig.json
+!conference-app/components.json
+
+# Checkpoints
+classification_checkpoint.csv
+conference_talks_with_topics.csv
+
+# Next.js
+conference-app/.next/
+conference-app/out/
+conference-app/node_modules/
+conference-app/.env*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Model cache
+.cache/
+transformers_cache/
+
