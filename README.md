@@ -27,12 +27,20 @@ This project provides three powerful components:
 - Fast version: 10-20x speedup with batch processing
 - Resume capability with checkpoints
 
+### 😊 AI Emotion Analysis
+- Emotion classification using roberta-base-go_emotions model
+- 28 emotion labels (positive, negative, cognitive, neutral)
+- Multi-label emotion detection per talk
+- Track emotional tone trends over 50+ years
+- Batch processing for efficient analysis
+
 ### 🎨 Interactive Web Application
-- **9 Powerful Features**:
+- **10 Powerful Features**:
   - Scripture search by volume, book, chapter, verse
   - Advanced word search with Boolean logic
   - Exact phrase search
-  - AI-powered topic exploration
+  - AI-powered topic exploration (60+ gospel topics)
+  - AI-powered emotion analysis (28 emotions)
   - Speaker analysis and statistics
   - Conference breakdowns
   - Individual talk analysis
@@ -52,9 +60,11 @@ conferencescraper/
 │   ├── ConferenceScraper_Updated.ipynb
 │   ├── update_recent_talks.py
 │   └── clean_dataset.py
-├── classification/             # AI topic classification
-│   ├── classify_topics.py              # Original version
-│   ├── classify_topics_fast.py         # Optimized version (10-20x faster)
+├── classification/             # AI topic & emotion classification
+│   ├── classify_topics.py              # Topic classification (original)
+│   ├── classify_topics_fast.py         # Topic classification (optimized)
+│   ├── classify_emotions_fast.py       # Emotion classification
+│   ├── requirements_emotions.txt       # Dependencies for emotions
 │   ├── test_classification.py
 │   └── test_fast_classification.py
 ├── conference-app/             # Next.js web application
@@ -68,6 +78,7 @@ conferencescraper/
 ├── docs/                       # Documentation
 │   ├── NLP_TOPICS_README.md
 │   ├── TOPIC_CLASSIFICATION_GUIDE.md
+│   ├── EMOTION_CLASSIFICATION_GUIDE.md
 │   ├── RUN_CLASSIFICATION.md
 │   ├── FAST_VERSION_README.md
 │   └── ...
@@ -111,6 +122,8 @@ python conferencescraper.py
 
 ### 3. Run AI Classification (Optional)
 
+#### Topic Classification
+
 To add topic classification to talks:
 
 ```bash
@@ -121,6 +134,20 @@ python classify_topics_fast.py  # Recommended: 10-20x faster
 **Time estimate:** 10-15 hours on CPU, 4-8 hours on GPU
 
 See [`docs/FAST_VERSION_README.md`](docs/FAST_VERSION_README.md) for optimization details.
+
+#### Emotion Classification
+
+To add emotion analysis to talks:
+
+```bash
+cd classification
+pip install -r requirements_emotions.txt  # If not already installed
+python classify_emotions_fast.py
+```
+
+**Time estimate:** 4-10 hours on CPU, 2-4 hours on GPU
+
+See [`docs/EMOTION_CLASSIFICATION_GUIDE.md`](docs/EMOTION_CLASSIFICATION_GUIDE.md) for details.
 
 ### 4. Launch Web Application
 
@@ -172,23 +199,46 @@ Uses **DeBERTa-v3-base-mnli-fever-anli** for zero-shot classification:
 - Batch processing for speed
 - Resume capability with checkpoints
 
+### AI Emotion Analysis
+
+Uses **roberta-base-go_emotions** for multi-label emotion classification:
+
+**28 Emotions Across 5 Categories:**
+- **Positive:** gratitude, admiration, joy, love, optimism, pride, relief, caring, excitement, approval, amusement
+- **Negative:** sadness, anger, fear, disappointment, grief, annoyance, disgust, embarrassment, nervousness, remorse, disapproval
+- **Cognitive:** confusion, curiosity, realization, surprise
+- **Desire & Motivation:** desire, optimism
+- **Neutral:** neutral
+
+**Key Features:**
+- Multi-label (up to 5 emotions per talk)
+- Confidence scores for each emotion
+- All 28 emotion scores stored for deep analysis
+- Track emotional tone over 50+ years
+- Batch processing for efficient inference
+
 ### Web Application
 
-**9 Interactive Sections:**
+**10 Interactive Sections:**
 
 1. **Scriptures** - Search by scripture reference
 2. **Word Search** - Boolean search with ANY/ALL/NONE operators
 3. **Phrase Search** - Find exact phrases with trend analysis
-4. **Topics** - AI-powered topic exploration (NEW!)
+4. **Topics** - AI-powered topic exploration
    - Browse 60+ gospel topics
    - See trends over 50+ years
    - Compare multiple topics
    - Find related topics
-5. **Speakers** - Analyze individual speakers
-6. **Conferences** - Conference-by-conference breakdowns
-7. **Talks** - Detailed individual talk statistics
-8. **Overall** - Comprehensive statistics across all talks
-9. **Filters** - Advanced filtering by speaker, era, year
+5. **Emotions** - AI-powered emotion analysis (NEW!)
+   - Explore 28 emotions across talks
+   - Track emotional tone over time
+   - Compare emotions across eras
+   - See emotion categories (positive, negative, cognitive)
+6. **Speakers** - Analyze individual speakers
+7. **Conferences** - Conference-by-conference breakdowns
+8. **Talks** - Detailed individual talk statistics
+9. **Overall** - Comprehensive statistics across all talks
+10. **Filters** - Advanced filtering by speaker, era, year
 
 **Technologies:**
 - Next.js 15 with App Router
@@ -201,11 +251,15 @@ Uses **DeBERTa-v3-base-mnli-fever-anli** for zero-shot classification:
 
 Comprehensive guides available in the [`docs/`](docs/) folder:
 
+**Topic Classification:**
 - **[NLP Topics Overview](docs/NLP_TOPICS_README.md)** - AI classification introduction
 - **[Topic Classification Guide](docs/TOPIC_CLASSIFICATION_GUIDE.md)** - Detailed technical guide
 - **[Quick Start Guide](docs/RUN_CLASSIFICATION.md)** - Get started quickly
 - **[Fast Version](docs/FAST_VERSION_README.md)** - 10-20x speed optimization
 - **[Progress Bar](docs/PROGRESS_BAR_EXAMPLE.md)** - What to expect during classification
+
+**Emotion Analysis:**
+- **[Emotion Classification Guide](docs/EMOTION_CLASSIFICATION_GUIDE.md)** - Emotion analysis setup and usage
 
 ## 🎓 Use Cases
 
