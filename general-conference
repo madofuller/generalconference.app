@@ -1,0 +1,257 @@
+#!/bin/bash
+
+# General Conference Analysis Tool - Startup Script
+# Usage: general-conference [start|stop|status|restart|logs]
+
+PROJECT_DIR="/Users/lukejoneslwj/Downloads/conferencescraper"
+API_LOG="/tmp/gc_api_server.log"
+NEXTJS_LOG="/tmp/gc_nextjs.log"
+
+BOLD='\033[1m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+print_header() {
+    echo -e "${BOLD}${BLUE}"
+    echo "╔════════════════════════════════════════════════════════╗"
+    echo "║     📖 General Conference Analysis Tool 🤖            ║"
+    echo "╚════════════════════════════════════════════════════════╝"
+    echo -e "${NC}"
+}
+
+check_status() {
+    local api_running=false
+    local nextjs_running=false
+    
+    if pgrep -f "code_executor.py" > /dev/null; then
+        api_running=true
+    fi
+    
+    if pgrep -f "next dev" > /dev/null; then
+        nextjs_running=true
+    fi
+    
+    echo "$api_running $nextjs_running"
+}
+
+start_servers() {
+    print_header
+    
+    read api_status nextjs_status <<< $(check_status)
+    
+    if [ "$api_status" = "true" ] && [ "$nextjs_status" = "true" ]; then
+        echo -e "${YELLOW}⚠️  Servers are already running!${NC}"
+        echo ""
+        show_status
+        return 0
+    fi
+    
+    echo -e "${BOLD}🚀 Starting servers...${NC}"
+    echo ""
+    
+    # Start Python API Server
+    if [ "$api_status" = "false" ]; then
+        echo -e "${BLUE}📊 Starting Python API Server...${NC}"
+        cd "$PROJECT_DIR"
+        source venv/bin/activate
+        cd api_server
+        nohup python code_executor.py > "$API_LOG" 2>&1 &
+        echo -e "   Log: $API_LOG"
+        sleep 3
+        
+        if curl -s http://localhost:5001/health > /dev/null; then
+            echo -e "   ${GREEN}✅ API Server ready at http://localhost:5001${NC}"
+        else
+            echo -e "   ${RED}❌ API Server failed to start${NC}"
+            echo -e "   Check logs: tail -f $API_LOG"
+            return 1
+        fi
+    else
+        echo -e "${GREEN}✅ API Server already running${NC}"
+    fi
+    
+    echo ""
+    
+    # Start Next.js
+    if [ "$nextjs_status" = "false" ]; then
+        echo -e "${BLUE}🌐 Starting Next.js App...${NC}"
+        cd "$PROJECT_DIR/conference-app"
+        nohup npm run dev > "$NEXTJS_LOG" 2>&1 &
+        echo -e "   Log: $NEXTJS_LOG"
+        sleep 5
+        
+        if curl -s http://localhost:3000 > /dev/null; then
+            echo -e "   ${GREEN}✅ Next.js ready at http://localhost:3000${NC}"
+        else
+            echo -e "   ${RED}❌ Next.js failed to start${NC}"
+            echo -e "   Check logs: tail -f $NEXTJS_LOG"
+            return 1
+        fi
+    else
+        echo -e "${GREEN}✅ Next.js already running${NC}"
+    fi
+    
+    echo ""
+    echo -e "${BOLD}${GREEN}🎉 All servers are running!${NC}"
+    echo ""
+    echo -e "${BOLD}📍 Access the app:${NC}"
+    echo -e "   🌐 Web App:  ${BLUE}http://localhost:3000${NC}"
+    echo -e "   🤖 Ask AI:   ${BLUE}http://localhost:3000/ask${NC}"
+    echo -e "   📊 API:      ${BLUE}http://localhost:5001${NC}"
+    echo ""
+    echo -e "${BOLD}📝 Useful commands:${NC}"
+    echo -e "   View logs:     ${YELLOW}general-conference logs${NC}"
+    echo -e "   Check status:  ${YELLOW}general-conference status${NC}"
+    echo -e "   Stop servers:  ${YELLOW}general-conference stop${NC}"
+    echo ""
+}
+
+stop_servers() {
+    print_header
+    echo -e "${BOLD}🛑 Stopping servers...${NC}"
+    echo ""
+    
+    # Stop Python API
+    if pgrep -f "code_executor.py" > /dev/null; then
+        pkill -f "code_executor.py"
+        echo -e "${GREEN}✅ Stopped Python API Server${NC}"
+    else
+        echo -e "${YELLOW}⚠️  Python API Server not running${NC}"
+    fi
+    
+    # Stop Next.js
+    if pgrep -f "next dev" > /dev/null; then
+        pkill -f "next dev"
+        echo -e "${GREEN}✅ Stopped Next.js App${NC}"
+    else
+        echo -e "${YELLOW}⚠️  Next.js App not running${NC}"
+    fi
+    
+    echo ""
+    echo -e "${BOLD}All servers stopped.${NC}"
+    echo ""
+}
+
+show_status() {
+    print_header
+    
+    read api_status nextjs_status <<< $(check_status)
+    
+    echo -e "${BOLD}📊 Server Status:${NC}"
+    echo ""
+    
+    # API Server
+    if [ "$api_status" = "true" ]; then
+        echo -e "   Python API:  ${GREEN}●${NC} Running at http://localhost:5001"
+        if curl -s http://localhost:5001/health > /dev/null 2>&1; then
+            local row_count=$(curl -s http://localhost:5001/health | grep -o '"rows":[0-9]*' | grep -o '[0-9]*')
+            echo -e "                ${GREEN}✓${NC} Health check passed ($row_count talks loaded)"
+        fi
+    else
+        echo -e "   Python API:  ${RED}○${NC} Not running"
+    fi
+    
+    # Next.js
+    if [ "$nextjs_status" = "true" ]; then
+        echo -e "   Next.js App: ${GREEN}●${NC} Running at http://localhost:3000"
+        if curl -s http://localhost:3000 > /dev/null 2>&1; then
+            echo -e "                ${GREEN}✓${NC} Health check passed"
+        fi
+    else
+        echo -e "   Next.js App: ${RED}○${NC} Not running"
+    fi
+    
+    echo ""
+    
+    if [ "$api_status" = "true" ] || [ "$nextjs_status" = "true" ]; then
+        echo -e "${BOLD}📝 View logs:${NC}"
+        [ "$api_status" = "true" ] && echo -e "   API:     tail -f $API_LOG"
+        [ "$nextjs_status" = "true" ] && echo -e "   Next.js: tail -f $NEXTJS_LOG"
+        echo ""
+    fi
+}
+
+show_logs() {
+    print_header
+    
+    read api_status nextjs_status <<< $(check_status)
+    
+    echo -e "${BOLD}📋 Recent Logs:${NC}"
+    echo ""
+    
+    if [ "$api_status" = "true" ]; then
+        echo -e "${BLUE}━━━ Python API Server ━━━${NC}"
+        tail -20 "$API_LOG"
+        echo ""
+    fi
+    
+    if [ "$nextjs_status" = "true" ]; then
+        echo -e "${BLUE}━━━ Next.js App ━━━${NC}"
+        tail -20 "$NEXTJS_LOG"
+        echo ""
+    fi
+    
+    if [ "$api_status" = "false" ] && [ "$nextjs_status" = "false" ]; then
+        echo -e "${YELLOW}⚠️  No servers are running${NC}"
+        echo ""
+    fi
+}
+
+restart_servers() {
+    stop_servers
+    sleep 2
+    start_servers
+}
+
+show_help() {
+    print_header
+    echo -e "${BOLD}Usage:${NC}"
+    echo -e "  general-conference [command]"
+    echo ""
+    echo -e "${BOLD}Commands:${NC}"
+    echo -e "  ${GREEN}start${NC}     Start both servers (default)"
+    echo -e "  ${RED}stop${NC}      Stop both servers"
+    echo -e "  ${BLUE}status${NC}    Show server status"
+    echo -e "  ${YELLOW}restart${NC}   Restart both servers"
+    echo -e "  ${BLUE}logs${NC}      Show recent logs"
+    echo -e "  ${BLUE}help${NC}      Show this help message"
+    echo ""
+    echo -e "${BOLD}Examples:${NC}"
+    echo -e "  general-conference          # Start servers"
+    echo -e "  general-conference start    # Start servers"
+    echo -e "  general-conference stop     # Stop servers"
+    echo -e "  general-conference status   # Check status"
+    echo ""
+}
+
+# Main command handler
+case "${1:-start}" in
+    start)
+        start_servers
+        ;;
+    stop)
+        stop_servers
+        ;;
+    status)
+        show_status
+        ;;
+    restart)
+        restart_servers
+        ;;
+    logs)
+        show_logs
+        ;;
+    help|--help|-h)
+        show_help
+        ;;
+    *)
+        echo -e "${RED}Unknown command: $1${NC}"
+        echo ""
+        show_help
+        exit 1
+        ;;
+esac
+
