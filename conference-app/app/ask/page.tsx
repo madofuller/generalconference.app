@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Navigation } from '@/components/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Send, Loader2, Code, BarChart3, AlertCircle, Sparkles } from 'lucide-react';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -27,6 +26,12 @@ export default function AskPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, loading]);
 
   const exampleQuestions = [
     "Which speaker has given the most talks?",
@@ -255,8 +260,8 @@ export default function AskPage() {
         )}
 
         {messages.length > 0 && (
-          <ScrollArea className="flex-1 p-6">
-            <div className="max-w-4xl mx-auto space-y-6">
+          <div className="flex-1 overflow-y-auto p-6">
+            <div className="max-w-4xl mx-auto space-y-6 pb-6">
               {messages.map((message, idx) => (
                 <div
                   key={idx}
@@ -383,8 +388,10 @@ export default function AskPage() {
                   </Card>
                 </div>
               )}
+              
+              <div ref={messagesEndRef} />
             </div>
-          </ScrollArea>
+          </div>
         )}
 
         <div className="border-t p-4">
