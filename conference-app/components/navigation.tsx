@@ -13,13 +13,15 @@ import {
   BarChart3,
   Filter,
   Tags,
-  Smile
+  Smile,
+  Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 
 const navigation = [
+  { name: 'Ask AI', href: '/ask', icon: Sparkles },
   { name: 'Scriptures', href: '/scriptures', icon: BookOpen },
   { name: 'Word Search', href: '/word-search', icon: Search },
   { name: 'Phrase Search', href: '/phrase-search', icon: MessageSquare },
