@@ -22,7 +22,7 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS for Next.js
 
 # Load the dataset once at startup
-DATA_PATH = os.path.join(os.path.dirname(__file__), '..', 'conference-app', 'public', 'conference_talks_cleaned.csv')
+DATA_PATH = os.path.join(os.path.dirname(__file__), '..', 'classification', 'conference_talks_with_emotions.csv')
 df = None
 
 def load_data():
