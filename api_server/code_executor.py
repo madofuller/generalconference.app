@@ -11,6 +11,7 @@ import io
 import traceback
 import os
 from contextlib import redirect_stdout, redirect_stderr
+from collections import Counter
 import matplotlib
 matplotlib.use('Agg')  # Non-interactive backend
 import matplotlib.pyplot as plt
@@ -55,7 +56,9 @@ def execute_code():
         'df': df.copy() if df is not None else None,  # Give code a copy
         'json': json,
         'plt': plt,
+        'Counter': Counter,  # Add Counter for collections
         '__builtins__': {
+            '__import__': __import__,  # Allow imports
             'print': print,
             'len': len,
             'str': str,
@@ -74,6 +77,10 @@ def execute_code():
             'max': max,
             'round': round,
             'abs': abs,
+            'isinstance': isinstance,
+            'type': type,
+            'hasattr': hasattr,
+            'getattr': getattr,
         }
     }
     
