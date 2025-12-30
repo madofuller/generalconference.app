@@ -104,7 +104,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Gemini API key not configured' }, { status: 500 });
     }
 
-    // Call Gemini API
+    // Build context from recent conversation
+    let contextText = '';
+    if (conversationHistory && conversationHistory.length > 0) {
+      const recentHistory = conversationHistory.slice(-2); // Last 2 exchanges
+      contextText = '\n\nRECENT CONVERSATION CONTEXT:\n';
+      recentHistory.forEach((msg: any) => {
+        const roleLabel = msg.role === 'assistant' ? 'Previous Response' : 'Previous Question';
+        contextText += `${roleLabel}: ${msg.parts[0].text.substring(0, 500)}\n`;
+      });
+      contextText += '\n';
+    }
+
+    // Call Gemini API with simplified single-turn approach
     const geminiResponse = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${GEMINI_API_KEY}`,
       {
@@ -116,12 +128,7 @@ export async function POST(request: Request) {
           contents: [
             {
               role: 'user',
-              parts: [{ text: SYSTEM_PROMPT }]
-            },
-            ...(conversationHistory || []),
-            {
-              role: 'user',
-              parts: [{ text: `Question: ${question}\n\nProvide ONLY the Python code to answer this question. Do not include explanations, just the code block.` }]
+              parts: [{ text: `${SYSTEM_PROMPT}\n\n${contextText}Current Question: ${question}\n\nProvide ONLY the Python code to answer this question. Do not include explanations, just the code block.` }]
             }
           ],
           generationConfig: {
