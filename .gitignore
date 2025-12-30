@@ -10,8 +10,11 @@ dist/
 downloads/
 eggs/
 .eggs/
+venv/lib/
+venv/lib64/
 lib/
 lib64/
+!conference-app/lib/
 parts/
 sdist/
 var/
