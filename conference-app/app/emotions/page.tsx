@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { loadTalks } from '@/lib/data-loader';
 import { Talk } from '@/lib/types';
 import { 
@@ -22,7 +23,7 @@ import {
 } from '@/lib/emotion-utils';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ExternalLink, Smile, Frown, Heart, AlertCircle } from 'lucide-react';
+import { ExternalLink, Smile, Frown, Heart, AlertCircle, Info } from 'lucide-react';
 
 export default function EmotionsPage() {
   const [talks, setTalks] = useState<Talk[]>([]);
@@ -196,6 +197,17 @@ export default function EmotionsPage() {
               Explore emotional tone across General Conference talks using AI analysis
             </p>
           </div>
+
+          {/* Methodology Disclaimer */}
+          <Alert className="mb-6">
+            <Info className="h-4 w-4" />
+            <AlertTitle>Methodology Note</AlertTitle>
+            <AlertDescription>
+              Emotion classifications are based on AI analysis of representative samples from each talk (title + selected sentences), 
+              not the full text. This approach enables efficient processing while capturing the emotional tone. 
+              Results provide valuable insights into emotional trends, though they may not reflect every emotional nuance of each talk.
+            </AlertDescription>
+          </Alert>
 
           {/* Summary Cards */}
           <div className="grid gap-4 sm:grid-cols-4 mb-6">

@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Info } from 'lucide-react';
 import { loadTalks, getEraForYear, getTalksByEra } from '@/lib/data-loader';
 import { Talk } from '@/lib/types';
 import { 
@@ -227,6 +229,17 @@ export default function TopicsPage() {
               Explore gospel topics across General Conference talks using AI classification
             </p>
           </div>
+
+          {/* Methodology Disclaimer */}
+          <Alert className="mb-6">
+            <Info className="h-4 w-4" />
+            <AlertTitle>Methodology Note</AlertTitle>
+            <AlertDescription>
+              Topic classifications are based on AI analysis of representative samples from each talk (title + selected sentences), 
+              not the full text. This approach enables efficient processing while capturing the main themes. 
+              Results provide valuable insights into topic trends, though they may not reflect every nuance of each talk.
+            </AlertDescription>
+          </Alert>
 
           {/* Filters */}
           <Card className="mb-6">
