@@ -128,7 +128,7 @@ export async function POST(request: Request) {
           contents: [
             {
               role: 'user',
-              parts: [{ text: `${SYSTEM_PROMPT}\n\n${contextText}Current Question: ${question}\n\nProvide ONLY the Python code to answer this question. Do not include explanations, just the code block.` }]
+              parts: [{ text: `${SYSTEM_PROMPT}\n\n${contextText}Current Question: ${question}\n\nProvide ONLY the Python code to answer this question. Do not include markdown formatting, explanations, or comments - just the raw Python code.` }]
             }
           ],
           generationConfig: {
@@ -151,12 +151,25 @@ export async function POST(request: Request) {
     // Extract Python code from response
     let code = aiResponse;
     
-    // Try to extract code from markdown code blocks
-    const codeBlockMatch = aiResponse.match(/```python\n([\s\S]*?)\n```/) || 
-                           aiResponse.match(/```\n([\s\S]*?)\n```/);
-    if (codeBlockMatch) {
-      code = codeBlockMatch[1];
+    // Try multiple extraction patterns for markdown code blocks
+    const patterns = [
+      /```python\n([\s\S]*?)\n```/,           // ```python\ncode\n```
+      /```python\r?\n([\s\S]*?)\r?\n```/,     // Handle different line endings
+      /```\n([\s\S]*?)\n```/,                 // ```\ncode\n```
+      /```python([\s\S]*?)```/,               // ```pythoncode``` (no newline)
+      /```([\s\S]*?)```/,                     // ```code``` (no language)
+    ];
+    
+    for (const pattern of patterns) {
+      const match = aiResponse.match(pattern);
+      if (match && match[1]) {
+        code = match[1].trim();
+        break;
+      }
     }
+    
+    // If still has backticks at start/end, remove them
+    code = code.replace(/^```python\s*/, '').replace(/^```\s*/, '').replace(/\s*```$/, '').trim();
 
     // Execute code
     const execResponse = await fetch(`${CODE_EXECUTOR_URL}/execute`, {
