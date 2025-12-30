@@ -17,11 +17,30 @@ export async function loadTalks(): Promise<Talk[]> {
       dynamicTyping: true,
       skipEmptyLines: true,
       complete: (results) => {
+        // Clean and normalize the data
         cachedTalks = results.data.map(row => ({
           ...row,
+          // Normalize text fields by trimming whitespace
+          title: (row.title || '').trim(),
+          speaker: (row.speaker || '').trim(),
+          calling: (row.calling || '').trim(),
+          season: (row.season || '').trim(),
+          url: (row.url || '').trim(),
+          calling_original: (row.calling_original || '').trim(),
+          // Normalize other fields
           year: Number(row.year) || 0,
           talk: row.talk || '',
-          footnotes: row.footnotes || ''
+          footnotes: row.footnotes || '',
+          // Keep NLP fields as-is
+          topics: row.topics,
+          topic_scores: row.topic_scores,
+          primary_topic: row.primary_topic,
+          primary_topic_score: row.primary_topic_score,
+          emotions: row.emotions,
+          emotion_scores: row.emotion_scores,
+          primary_emotion: row.primary_emotion,
+          primary_emotion_score: row.primary_emotion_score,
+          all_emotion_scores: row.all_emotion_scores
         }));
         resolve(cachedTalks);
       },
