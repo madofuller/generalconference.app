@@ -174,27 +174,109 @@ function generateSearchResult(matchingTalks: Talk[], allTalks: Talk[]): SearchRe
 }
 
 export function countScriptureReferences(talk: Talk): number {
-  // Count scripture references in footnotes
-  if (!talk.footnotes) return 0;
+  // Check both footnotes and talk text for scripture references
+  const textToSearch = (talk.footnotes || '') + ' ' + (talk.talk || '');
+  if (!textToSearch.trim()) return 0;
   
-  // Simple heuristic: count book names or verse patterns
-  const patterns = [
-    /\d+\s+Nephi/gi,
-    /Alma/gi,
-    /Moroni/gi,
-    /D&C/gi,
-    /Matthew/gi,
-    /John/gi,
-    /Romans/gi,
-    /Genesis/gi,
-    /Exodus/gi,
-    /Moses/gi,
-    /Abraham/gi
+  // Comprehensive scripture reference patterns
+  // Match patterns like "1 Nephi 3:7", "Alma 32:21", "D&C 88:118", "Matthew 5:14-16"
+  const scripturePatterns = [
+    // Book of Mormon
+    /\b1\s*Nephi\s+\d+[:\d\-,\s]*/gi,
+    /\b2\s*Nephi\s+\d+[:\d\-,\s]*/gi,
+    /\bJacob\s+\d+[:\d\-,\s]*/gi,
+    /\bEno[s]?\s+\d*[:\d\-,\s]*/gi,
+    /\bJarom\s+\d*[:\d\-,\s]*/gi,
+    /\bOmni\s+\d*[:\d\-,\s]*/gi,
+    /\bMosiah\s+\d+[:\d\-,\s]*/gi,
+    /\bAlma\s+\d+[:\d\-,\s]*/gi,
+    /\bHelaman\s+\d+[:\d\-,\s]*/gi,
+    /\b3\s*Nephi\s+\d+[:\d\-,\s]*/gi,
+    /\b4\s*Nephi\s+\d*[:\d\-,\s]*/gi,
+    /\bMormon\s+\d+[:\d\-,\s]*/gi,
+    /\bEther\s+\d+[:\d\-,\s]*/gi,
+    /\bMoroni\s+\d+[:\d\-,\s]*/gi,
+    // D&C
+    /\bD\.?\s*&\s*C\.?\s+\d+[:\d\-,\s]*/gi,
+    /\bDoctrine\s+and\s+Covenants\s+\d+[:\d\-,\s]*/gi,
+    // Pearl of Great Price
+    /\bMoses\s+\d+[:\d\-,\s]*/gi,
+    /\bAbraham\s+\d+[:\d\-,\s]*/gi,
+    /\bJoseph\s+Smith[—\-–]\s*History\s+\d*[:\d\-,\s]*/gi,
+    /\bJS[—\-–]H\s+\d*[:\d\-,\s]*/gi,
+    // New Testament
+    /\bMatthew\s+\d+[:\d\-,\s]*/gi,
+    /\bMark\s+\d+[:\d\-,\s]*/gi,
+    /\bLuke\s+\d+[:\d\-,\s]*/gi,
+    /\bJohn\s+\d+[:\d\-,\s]*/gi,
+    /\bActs\s+\d+[:\d\-,\s]*/gi,
+    /\bRomans\s+\d+[:\d\-,\s]*/gi,
+    /\b1\s*Corinthians\s+\d+[:\d\-,\s]*/gi,
+    /\b2\s*Corinthians\s+\d+[:\d\-,\s]*/gi,
+    /\bGalatians\s+\d+[:\d\-,\s]*/gi,
+    /\bEphesians\s+\d+[:\d\-,\s]*/gi,
+    /\bPhilippians\s+\d+[:\d\-,\s]*/gi,
+    /\bColossians\s+\d+[:\d\-,\s]*/gi,
+    /\b1\s*Thessalonians\s+\d+[:\d\-,\s]*/gi,
+    /\b2\s*Thessalonians\s+\d+[:\d\-,\s]*/gi,
+    /\b1\s*Timothy\s+\d+[:\d\-,\s]*/gi,
+    /\b2\s*Timothy\s+\d+[:\d\-,\s]*/gi,
+    /\bTitus\s+\d+[:\d\-,\s]*/gi,
+    /\bPhilemon\s+\d*[:\d\-,\s]*/gi,
+    /\bHebrews\s+\d+[:\d\-,\s]*/gi,
+    /\bJames\s+\d+[:\d\-,\s]*/gi,
+    /\b1\s*Peter\s+\d+[:\d\-,\s]*/gi,
+    /\b2\s*Peter\s+\d+[:\d\-,\s]*/gi,
+    /\b1\s*John\s+\d+[:\d\-,\s]*/gi,
+    /\b2\s*John\s+\d*[:\d\-,\s]*/gi,
+    /\b3\s*John\s+\d*[:\d\-,\s]*/gi,
+    /\bJude\s+\d*[:\d\-,\s]*/gi,
+    /\bRevelation\s+\d+[:\d\-,\s]*/gi,
+    // Old Testament
+    /\bGenesis\s+\d+[:\d\-,\s]*/gi,
+    /\bExodus\s+\d+[:\d\-,\s]*/gi,
+    /\bLeviticus\s+\d+[:\d\-,\s]*/gi,
+    /\bNumbers\s+\d+[:\d\-,\s]*/gi,
+    /\bDeuteronomy\s+\d+[:\d\-,\s]*/gi,
+    /\bJoshua\s+\d+[:\d\-,\s]*/gi,
+    /\bJudges\s+\d+[:\d\-,\s]*/gi,
+    /\bRuth\s+\d+[:\d\-,\s]*/gi,
+    /\b1\s*Samuel\s+\d+[:\d\-,\s]*/gi,
+    /\b2\s*Samuel\s+\d+[:\d\-,\s]*/gi,
+    /\b1\s*Kings\s+\d+[:\d\-,\s]*/gi,
+    /\b2\s*Kings\s+\d+[:\d\-,\s]*/gi,
+    /\b1\s*Chronicles\s+\d+[:\d\-,\s]*/gi,
+    /\b2\s*Chronicles\s+\d+[:\d\-,\s]*/gi,
+    /\bEzra\s+\d+[:\d\-,\s]*/gi,
+    /\bNehemiah\s+\d+[:\d\-,\s]*/gi,
+    /\bEsther\s+\d+[:\d\-,\s]*/gi,
+    /\bJob\s+\d+[:\d\-,\s]*/gi,
+    /\bPsalm[s]?\s+\d+[:\d\-,\s]*/gi,
+    /\bProverbs\s+\d+[:\d\-,\s]*/gi,
+    /\bEcclesiastes\s+\d+[:\d\-,\s]*/gi,
+    /\bSong\s+of\s+Solomon\s+\d+[:\d\-,\s]*/gi,
+    /\bIsaiah\s+\d+[:\d\-,\s]*/gi,
+    /\bJeremiah\s+\d+[:\d\-,\s]*/gi,
+    /\bLamentations\s+\d+[:\d\-,\s]*/gi,
+    /\bEzekiel\s+\d+[:\d\-,\s]*/gi,
+    /\bDaniel\s+\d+[:\d\-,\s]*/gi,
+    /\bHosea\s+\d+[:\d\-,\s]*/gi,
+    /\bJoel\s+\d+[:\d\-,\s]*/gi,
+    /\bAmos\s+\d+[:\d\-,\s]*/gi,
+    /\bObadiah\s+\d*[:\d\-,\s]*/gi,
+    /\bJonah\s+\d+[:\d\-,\s]*/gi,
+    /\bMicah\s+\d+[:\d\-,\s]*/gi,
+    /\bNahum\s+\d+[:\d\-,\s]*/gi,
+    /\bHabakkuk\s+\d+[:\d\-,\s]*/gi,
+    /\bZephaniah\s+\d+[:\d\-,\s]*/gi,
+    /\bHaggai\s+\d+[:\d\-,\s]*/gi,
+    /\bZechariah\s+\d+[:\d\-,\s]*/gi,
+    /\bMalachi\s+\d+[:\d\-,\s]*/gi,
   ];
   
   let count = 0;
-  patterns.forEach(pattern => {
-    const matches = talk.footnotes.match(pattern);
+  scripturePatterns.forEach(pattern => {
+    const matches = textToSearch.match(pattern);
     if (matches) count += matches.length;
   });
   
