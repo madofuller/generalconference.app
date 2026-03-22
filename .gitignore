@@ -39,6 +39,8 @@ data/*.json
 !conference-app/package*.json
 !conference-app/tsconfig.json
 !conference-app/components.json
+!conference-app/public/*.csv
+!conference-app/public/*.json
 
 # Checkpoints
 classification_checkpoint.csv
