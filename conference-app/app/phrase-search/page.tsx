@@ -1,35 +1,26 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Navigation } from '@/components/navigation';
+import { useState } from 'react';
+import { Navigation, TopAppBar } from '@/components/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { useFilters } from '@/lib/filter-context';
-import { loadTalks } from '@/lib/data-loader';
+import { useFilters, useFilteredTalks } from '@/lib/filter-context';
 import { searchByPhrase } from '@/lib/search-utils';
-import { Talk, SearchResult } from '@/lib/types';
+import { SearchResult } from '@/lib/types';
 import { SearchResults } from '@/components/search-results';
 import { Badge } from '@/components/ui/badge';
 
 export default function PhraseSearchPage() {
   const { filters } = useFilters();
-  const [talks, setTalks] = useState<Talk[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { talks, loading } = useFilteredTalks();
   const [searching, setSearching] = useState(false);
   const [searchResult, setSearchResult] = useState<SearchResult | null>(null);
-  
+
   const [phrase, setPhrase] = useState('');
   const [scope, setScope] = useState<'talk_text' | 'title'>('talk_text');
-
-  useEffect(() => {
-    loadTalks().then(data => {
-      setTalks(data);
-      setLoading(false);
-    });
-  }, []);
 
   const handleSearch = () => {
     if (!phrase.trim()) return;
@@ -58,28 +49,21 @@ export default function PhraseSearchPage() {
 
   if (loading) {
     return (
-      <div className="flex h-screen">
+      <div className="flex min-h-screen">
         <Navigation />
-        <main className="flex-1 overflow-y-auto">
-          <div className="container mx-auto p-8">
-            <p>Loading...</p>
-          </div>
+        <main className="ml-0 lg:ml-[260px] flex-1 flex items-center justify-center">
+          <p className="text-[#524534]">Loading...</p>
         </main>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="flex min-h-screen">
       <Navigation />
-      <main className="flex-1 overflow-y-auto">
-        <div className="container mx-auto p-8">
-          <div className="mb-8">
-            <h1 className="mb-2 text-4xl font-bold">Phrase Search</h1>
-            <p className="text-xl text-muted-foreground">
-              Search for talks containing specific phrases
-            </p>
-          </div>
+      <main className="ml-0 lg:ml-[260px] min-h-screen flex-1">
+        <TopAppBar title="Phrase Search" subtitle="Find exact phrases in talks" />
+        <div className="px-4 md:px-8 lg:px-12 pb-12 md:pb-24">
 
           {/* Current Filter Badge */}
           {filters.type !== 'none' && (
@@ -112,7 +96,7 @@ export default function PhraseSearchPage() {
                     }
                   }}
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-[#524534]">
                   Enter the exact phrase you want to find. Search is case-insensitive.
                 </p>
               </div>
@@ -135,7 +119,7 @@ export default function PhraseSearchPage() {
               {/* Example Searches */}
               <div className="rounded-lg bg-muted p-4">
                 <p className="text-sm font-medium mb-2">Example Searches:</p>
-                <ul className="text-sm text-muted-foreground space-y-1">
+                <ul className="text-sm text-[#524534] space-y-1">
                   <li>• "plan of salvation"</li>
                   <li>• "gathering of Israel"</li>
                   <li>• "temple ordinances"</li>
@@ -165,19 +149,19 @@ export default function PhraseSearchPage() {
                 <CardContent>
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     <div>
-                      <p className="text-sm text-muted-foreground">Phrase</p>
+                      <p className="text-sm text-[#524534]">Phrase</p>
                       <p className="text-lg font-semibold">"{phrase}"</p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Talks Found</p>
+                      <p className="text-sm text-[#524534]">Talks Found</p>
                       <p className="text-lg font-semibold">{searchResult.talks.length}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Total References</p>
+                      <p className="text-sm text-[#524534]">Total References</p>
                       <p className="text-lg font-semibold">{searchResult.totalReferences}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">References per Talk</p>
+                      <p className="text-sm text-[#524534]">References per Talk</p>
                       <p className="text-lg font-semibold">
                         {searchResult.talks.length > 0 
                           ? (searchResult.totalReferences / searchResult.talks.length).toFixed(2)
@@ -198,7 +182,7 @@ export default function PhraseSearchPage() {
           {searchResult && searchResult.talks.length === 0 && (
             <Card>
               <CardContent className="py-8">
-                <p className="text-center text-muted-foreground">
+                <p className="text-center text-[#524534]">
                   No talks found containing the phrase "{phrase}". Try a different phrase or adjust your filters.
                 </p>
               </CardContent>
@@ -220,7 +204,7 @@ export default function PhraseSearchPage() {
                 </ol>
                 <div className="mt-4 rounded-lg bg-muted p-4">
                   <p className="text-sm font-medium mb-2">Note:</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-[#524534]">
                     If you have set a filter, the search will only include talks matching both the phrase and the filter criteria.
                   </p>
                 </div>

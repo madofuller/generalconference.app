@@ -1,37 +1,28 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Navigation } from '@/components/navigation';
+import { useState } from 'react';
+import { Navigation, TopAppBar } from '@/components/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { useFilters } from '@/lib/filter-context';
-import { loadTalks } from '@/lib/data-loader';
+import { useFilters, useFilteredTalks } from '@/lib/filter-context';
 import { searchByWord } from '@/lib/search-utils';
-import { Talk, SearchResult } from '@/lib/types';
+import { SearchResult } from '@/lib/types';
 import { SearchResults } from '@/components/search-results';
 import { Badge } from '@/components/ui/badge';
 
 export default function WordSearchPage() {
   const { filters } = useFilters();
-  const [talks, setTalks] = useState<Talk[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { talks, loading } = useFilteredTalks();
   const [searching, setSearching] = useState(false);
   const [searchResult, setSearchResult] = useState<SearchResult | null>(null);
-  
+
   const [anyWords, setAnyWords] = useState('');
   const [allWords, setAllWords] = useState('');
   const [noneWords, setNoneWords] = useState('');
   const [scope, setScope] = useState<'talk_text' | 'title'>('talk_text');
-
-  useEffect(() => {
-    loadTalks().then(data => {
-      setTalks(data);
-      setLoading(false);
-    });
-  }, []);
 
   const handleSearch = () => {
     setSearching(true);
@@ -63,28 +54,21 @@ export default function WordSearchPage() {
 
   if (loading) {
     return (
-      <div className="flex h-screen">
+      <div className="flex min-h-screen">
         <Navigation />
-        <main className="flex-1 overflow-y-auto">
-          <div className="container mx-auto p-8">
-            <p>Loading...</p>
-          </div>
+        <main className="ml-0 lg:ml-[260px] flex-1 flex items-center justify-center">
+          <p className="text-[#524534]">Loading...</p>
         </main>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="flex min-h-screen">
       <Navigation />
-      <main className="flex-1 overflow-y-auto">
-        <div className="container mx-auto p-8">
-          <div className="mb-8">
-            <h1 className="mb-2 text-4xl font-bold">Word Search</h1>
-            <p className="text-xl text-muted-foreground">
-              Search for talks containing specific words with advanced Boolean logic
-            </p>
-          </div>
+      <main className="ml-0 lg:ml-[260px] min-h-screen flex-1">
+        <TopAppBar title="Word Search" subtitle="Boolean word search across all talks" />
+        <div className="px-4 md:px-8 lg:px-12 pb-12 md:pb-24">
 
           {/* Current Filter Badge */}
           {filters.type !== 'none' && (
@@ -127,7 +111,7 @@ export default function WordSearchPage() {
                   value={anyWords}
                   onChange={(e) => setAnyWords(e.target.value)}
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-[#524534]">
                   Separate words with spaces. Talk must contain at least one of these words.
                 </p>
               </div>
@@ -141,7 +125,7 @@ export default function WordSearchPage() {
                   value={allWords}
                   onChange={(e) => setAllWords(e.target.value)}
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-[#524534]">
                   Separate words with spaces. Talk must contain all of these words.
                 </p>
               </div>
@@ -155,7 +139,7 @@ export default function WordSearchPage() {
                   value={noneWords}
                   onChange={(e) => setNoneWords(e.target.value)}
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-[#524534]">
                   Separate words with spaces. Talk must not contain any of these words.
                 </p>
               </div>
@@ -163,10 +147,10 @@ export default function WordSearchPage() {
               {/* Search Logic Explanation */}
               <div className="rounded-lg bg-muted p-4">
                 <p className="text-sm font-medium mb-2">Search Logic:</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-[#524534]">
                   Results = (ANY) AND (ALL) AND NOT (NONE)
                 </p>
-                <p className="text-xs text-muted-foreground mt-2">
+                <p className="text-xs text-[#524534] mt-2">
                   Example: For "gathering of Israel" - set ANY: "gather gathering scatter scattering", ALL: "Israel", NONE: (empty)
                 </p>
               </div>
@@ -194,7 +178,7 @@ export default function WordSearchPage() {
           {searchResult && searchResult.talks.length === 0 && (
             <Card>
               <CardContent className="py-8">
-                <p className="text-center text-muted-foreground">
+                <p className="text-center text-[#524534]">
                   No talks found matching your search criteria. Try adjusting your search terms or filters.
                 </p>
               </CardContent>

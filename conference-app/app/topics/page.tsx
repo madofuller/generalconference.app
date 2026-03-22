@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Navigation } from '@/components/navigation';
+import { useState, useEffect, useMemo } from 'react';
+import { Navigation, TopAppBar } from '@/components/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
@@ -10,8 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Info } from 'lucide-react';
-import { loadTalks, getEraForYear, getTalksByEra } from '@/lib/data-loader';
-import { Talk } from '@/lib/types';
+import { useFilteredTalks } from '@/lib/filter-context';
+import { getTalksByEra } from '@/lib/data-loader';
 import { 
   getAllTopics, 
   getTopicStats, 
@@ -29,33 +29,23 @@ import { ExternalLink, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82ca9d', '#ffc658', '#ff7c7c'];
 
 export default function TopicsPage() {
-  const [talks, setTalks] = useState<Talk[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [hasTopics, setHasTopics] = useState(false);
-  const [topics, setTopics] = useState<string[]>([]);
+  const { talks, loading } = useFilteredTalks();
   const [selectedTopic, setSelectedTopic] = useState('');
   const [selectedEra, setSelectedEra] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
+  const hasTopics = useMemo(() => talks.filter(t => t.primary_topic && t.primary_topic !== 'Error').length > 0, [talks]);
+
+  const topics = useMemo(() => {
+    const topicData = talks.filter(t => t.primary_topic && t.primary_topic !== 'Error');
+    return topicData.length > 0 ? getAllTopics(topicData) : [];
+  }, [talks]);
+
   useEffect(() => {
-    loadTalks().then(data => {
-      setTalks(data);
-      
-      // Check if topics are available
-      const topicData = data.filter(t => t.primary_topic && t.primary_topic !== 'Error');
-      setHasTopics(topicData.length > 0);
-      
-      if (topicData.length > 0) {
-        const allTopics = getAllTopics(topicData);
-        setTopics(allTopics);
-        if (allTopics.length > 0) {
-          setSelectedTopic(allTopics[0]);
-        }
-      }
-      
-      setLoading(false);
-    });
-  }, []);
+    if (topics.length > 0 && !selectedTopic) {
+      setSelectedTopic(topics[0]);
+    }
+  }, [topics, selectedTopic]);
 
   const filteredTalks = selectedEra === 'all' 
     ? talks.filter(t => t.primary_topic)
@@ -133,12 +123,10 @@ export default function TopicsPage() {
 
   if (loading) {
     return (
-      <div className="flex h-screen">
+      <div className="flex min-h-screen">
         <Navigation />
-        <main className="flex-1 overflow-y-auto">
-          <div className="container mx-auto p-8">
-            <p>Loading...</p>
-          </div>
+        <main className="ml-0 lg:ml-[260px] flex-1 flex items-center justify-center">
+          <p className="text-[#524534]">Loading...</p>
         </main>
       </div>
     );
@@ -146,70 +134,23 @@ export default function TopicsPage() {
 
   if (!hasTopics) {
     return (
-      <div className="flex h-screen">
+      <div className="flex min-h-screen">
         <Navigation />
-        <main className="flex-1 overflow-y-auto">
-          <div className="container mx-auto p-8">
-            <div className="mb-8">
-              <h1 className="mb-2 text-4xl font-bold">Topics</h1>
-              <p className="text-xl text-muted-foreground">
-                AI-powered topic classification using Preach My Gospel themes
-              </p>
-            </div>
+        <main className="ml-0 lg:ml-[260px] min-h-screen flex-1">
+          <TopAppBar title="Topics" subtitle="AI-classified gospel topics" />
+          <div className="px-4 md:px-8 lg:px-12 pb-12 md:pb-24">
 
-            <Card className="border-2 border-yellow-500">
+            <Card>
               <CardHeader>
-                <CardTitle>Topics Not Yet Classified</CardTitle>
+                <CardTitle>Topics Coming Soon</CardTitle>
                 <CardDescription>
-                  The talks need to be classified with AI before using this feature
+                  This feature requires AI-classified topic data that hasn&apos;t been generated yet.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p>To add topic classification to your talks, follow these steps:</p>
-                
-                <div className="rounded-lg bg-muted p-4">
-                  <h3 className="font-semibold mb-2">Step 1: Install Dependencies</h3>
-                  <pre className="text-sm bg-black text-white p-3 rounded overflow-x-auto">
-                    cd /Users/lukejoneslwj/Downloads/conferencescraper{'\n'}
-                    pip install -r requirements_nlp.txt
-                  </pre>
-                </div>
-
-                <div className="rounded-lg bg-muted p-4">
-                  <h3 className="font-semibold mb-2">Step 2: Run Classification Script</h3>
-                  <pre className="text-sm bg-black text-white p-3 rounded overflow-x-auto">
-                    python classify_topics.py
-                  </pre>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    ⚠️ This will take several hours for ~280,000 talks. Consider using a GPU for faster processing.
-                  </p>
-                </div>
-
-                <div className="rounded-lg bg-muted p-4">
-                  <h3 className="font-semibold mb-2">Step 3: Update Data File</h3>
-                  <p className="text-sm">
-                    Copy the generated <code>conference_talks_with_topics.csv</code> to{' '}
-                    <code>conference-app/public/conference_talks_cleaned.csv</code> (replace the existing file)
-                  </p>
-                </div>
-
-                <div className="rounded-lg bg-muted p-4">
-                  <h3 className="font-semibold mb-2">Step 4: Reload the App</h3>
-                  <p className="text-sm">
-                    Refresh your browser to load the newly classified data.
-                  </p>
-                </div>
-
-                <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                  <h3 className="font-semibold mb-2">What This Feature Does:</h3>
-                  <ul className="list-disc list-inside space-y-1 text-sm">
-                    <li>Uses DeBERTa-v3-base AI model for zero-shot classification</li>
-                    <li>Classifies talks by 60+ gospel topics from Preach My Gospel</li>
-                    <li>Shows topic trends over 50+ years of General Conference</li>
-                    <li>Compare topics, explore related themes, discover insights</li>
-                    <li>See which topics are rising or declining in emphasis</li>
-                  </ul>
-                </div>
+                <p className="text-sm text-[#524534]">
+                  Once topic classification is complete, you&apos;ll be able to explore 60+ gospel topics across 50+ years of General Conference &mdash; see trends, compare themes, and discover which topics are rising or declining.
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -219,16 +160,11 @@ export default function TopicsPage() {
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="flex min-h-screen">
       <Navigation />
-      <main className="flex-1 overflow-y-auto">
-        <div className="container mx-auto p-8">
-          <div className="mb-8">
-            <h1 className="mb-2 text-4xl font-bold">Topics</h1>
-            <p className="text-xl text-muted-foreground">
-              Explore gospel topics across General Conference talks using AI classification
-            </p>
-          </div>
+      <main className="ml-0 lg:ml-[260px] min-h-screen flex-1">
+        <TopAppBar title="Topics" subtitle="AI-classified gospel topics" />
+        <div className="px-4 md:px-8 lg:px-12 pb-12 md:pb-24">
 
           {/* Methodology Disclaimer */}
           <Alert className="mb-6">
@@ -280,8 +216,8 @@ export default function TopicsPage() {
             </CardContent>
           </Card>
 
-          <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
+          <Tabs defaultValue="overview" className="space-y-4 md:space-y-6">
+            <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="explore">Explore Topic</TabsTrigger>
               <TabsTrigger value="compare">Compare Topics</TabsTrigger>
@@ -297,7 +233,7 @@ export default function TopicsPage() {
                     <CardTitle className="text-sm font-medium">Total Topics</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-bold">{topics.length}</div>
+                    <div className="text-xl md:text-3xl font-bold">{topics.length}</div>
                   </CardContent>
                 </Card>
                 <Card>
@@ -305,7 +241,7 @@ export default function TopicsPage() {
                     <CardTitle className="text-sm font-medium">Classified Talks</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-bold">{filteredTalks.length}</div>
+                    <div className="text-xl md:text-3xl font-bold">{filteredTalks.length}</div>
                   </CardContent>
                 </Card>
                 <Card>
@@ -313,7 +249,7 @@ export default function TopicsPage() {
                     <CardTitle className="text-sm font-medium">Avg Topics/Talk</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-bold">2.8</div>
+                    <div className="text-xl md:text-3xl font-bold">2.8</div>
                   </CardContent>
                 </Card>
                 <Card>
@@ -321,7 +257,7 @@ export default function TopicsPage() {
                     <CardTitle className="text-sm font-medium">Avg Confidence</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-bold">
+                    <div className="text-xl md:text-3xl font-bold">
                       {(filteredTalks.reduce((sum, t) => sum + (t.primary_topic_score || 0), 0) / filteredTalks.length * 100).toFixed(0)}%
                     </div>
                   </CardContent>
@@ -346,7 +282,7 @@ export default function TopicsPage() {
                       </BarChart>
                     </ResponsiveContainer>
 
-                    <div className="rounded-md border">
+                    <div className="overflow-x-auto rounded-md border">
                       <Table>
                         <TableHeader>
                           <TableRow>
@@ -415,7 +351,7 @@ export default function TopicsPage() {
                         <CardTitle className="text-sm font-medium">Total Talks</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="text-3xl font-bold">{selectedTopicStats.count}</div>
+                        <div className="text-xl md:text-3xl font-bold">{selectedTopicStats.count}</div>
                       </CardContent>
                     </Card>
                     <Card>
@@ -423,7 +359,7 @@ export default function TopicsPage() {
                         <CardTitle className="text-sm font-medium">Percentage</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="text-3xl font-bold">{selectedTopicStats.percentage.toFixed(1)}%</div>
+                        <div className="text-xl md:text-3xl font-bold">{selectedTopicStats.percentage.toFixed(1)}%</div>
                       </CardContent>
                     </Card>
                     <Card>
@@ -431,7 +367,7 @@ export default function TopicsPage() {
                         <CardTitle className="text-sm font-medium">Avg Confidence</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="text-3xl font-bold">{(selectedTopicStats.avgScore * 100).toFixed(0)}%</div>
+                        <div className="text-xl md:text-3xl font-bold">{(selectedTopicStats.avgScore * 100).toFixed(0)}%</div>
                       </CardContent>
                     </Card>
                     <Card>
@@ -477,7 +413,7 @@ export default function TopicsPage() {
                             <Badge 
                               key={rt.topic} 
                               variant="secondary" 
-                              className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
+                              className="cursor-pointer hover:bg-[#1B5E7B] hover:text-white"
                               onClick={() => setSelectedTopic(rt.topic)}
                             >
                               {rt.topic} ({rt.frequency})
@@ -504,12 +440,12 @@ export default function TopicsPage() {
                               <div className="flex items-start justify-between gap-4">
                                 <div className="flex-1">
                                   <h3 className="font-semibold mb-1">{talk.title}</h3>
-                                  <p className="text-sm text-muted-foreground mb-2">
+                                  <p className="text-sm text-[#524534] mb-2">
                                     {talk.speaker} • {talk.season} {talk.year}
                                   </p>
                                   <div className="flex gap-2 items-center">
                                     <Badge variant="outline">{talk.calling}</Badge>
-                                    <span className="text-xs text-muted-foreground">
+                                    <span className="text-xs text-[#524534]">
                                       Confidence: {((talk.primary_topic_score || 0) * 100).toFixed(0)}%
                                     </span>
                                   </div>
@@ -607,7 +543,7 @@ export default function TopicsPage() {
 
             {/* Trends Tab */}
             <TabsContent value="trends" className="space-y-6">
-              <div className="grid gap-6 lg:grid-cols-3">
+              <div className="grid gap-4 md:gap-6 lg:grid-cols-3">
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">

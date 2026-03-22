@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Navigation } from '@/components/navigation';
+import { Navigation, TopAppBar } from '@/components/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -122,7 +122,7 @@ export default function AskPage() {
             </TableBody>
           </Table>
           {data.data.length > 50 && (
-            <div className="p-2 text-sm text-muted-foreground text-center border-t">
+            <div className="p-2 text-sm text-[#524534] text-center border-t">
               Showing first 50 of {data.data.length} rows
             </div>
           )}
@@ -176,21 +176,13 @@ export default function AskPage() {
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="flex min-h-screen">
       <Navigation />
-      <main className="flex-1 overflow-hidden flex flex-col">
-        <div className="border-b p-6">
-          <h1 className="mb-2 text-4xl font-bold flex items-center gap-2">
-            <Sparkles className="h-8 w-8 text-purple-500" />
-            Ask AI
-          </h1>
-          <p className="text-xl text-muted-foreground">
-            Ask any question about conference talks. AI will analyze the data for you.
-          </p>
-        </div>
+      <main className="ml-0 lg:ml-[260px] min-h-screen flex-1 flex flex-col">
+        <TopAppBar title="Ask AI" subtitle="AI-powered conference insights" />
 
         {messages.length === 0 && (
-          <div className="p-6 space-y-6">
+          <div className="p-4 md:p-6 space-y-4 md:space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>How It Works</CardTitle>
@@ -207,7 +199,7 @@ export default function AskPage() {
                       </div>
                       <h3 className="font-semibold">Ask</h3>
                     </div>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-[#524534]">
                       Type your question in natural language
                     </p>
                   </div>
@@ -218,7 +210,7 @@ export default function AskPage() {
                       </div>
                       <h3 className="font-semibold">Analyze</h3>
                     </div>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-[#524534]">
                       AI writes Python code to analyze the data
                     </p>
                   </div>
@@ -229,7 +221,7 @@ export default function AskPage() {
                       </div>
                       <h3 className="font-semibold">Results</h3>
                     </div>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-[#524534]">
                       Get answers with tables and charts
                     </p>
                   </div>
@@ -260,12 +252,12 @@ export default function AskPage() {
         )}
 
         {messages.length > 0 && (
-          <div className="flex-1 overflow-y-auto p-6">
+          <div className="flex-1 overflow-y-auto p-4 md:p-6">
             <div className="max-w-4xl mx-auto space-y-6 pb-6">
               {messages.map((message, idx) => (
                 <div
                   key={idx}
-                  className={`flex gap-4 ${
+                  className={`flex gap-2 md:gap-4 ${
                     message.role === 'user' ? 'justify-end' : 'justify-start'
                   }`}
                 >
@@ -277,7 +269,7 @@ export default function AskPage() {
                   
                   <div className={`flex-1 space-y-3 ${message.role === 'user' ? 'max-w-lg' : 'max-w-3xl'}`}>
                     {message.role === 'user' ? (
-                      <div className="rounded-lg bg-primary px-4 py-3 text-primary-foreground">
+                      <div className="rounded-lg bg-[#1B5E7B] px-4 py-3 text-white">
                         <p>{message.content}</p>
                       </div>
                     ) : (
@@ -380,7 +372,7 @@ export default function AskPage() {
                   </div>
                   <Card className="flex-1">
                     <CardContent className="pt-6">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-2 text-sm text-[#524534]">
                         <Loader2 className="h-4 w-4 animate-spin" />
                         Analyzing your question...
                       </div>

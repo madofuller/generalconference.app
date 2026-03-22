@@ -3,35 +3,25 @@ import { Talk, Conference, ERAS } from './types';
 
 let cachedTalks: Talk[] | null = null;
 
-export async function loadTalks(): Promise<Talk[]> {
-  if (cachedTalks) {
-    return cachedTalks;
-  }
-
-  const response = await fetch('/conference_talks_cleaned.csv');
-  const csvText = await response.text();
-
+function parseCsv(csvText: string, source: 'modern' | 'historical'): Promise<Talk[]> {
   return new Promise((resolve, reject) => {
     Papa.parse<Talk>(csvText, {
       header: true,
       dynamicTyping: true,
       skipEmptyLines: true,
       complete: (results) => {
-        // Clean and normalize the data
-        cachedTalks = results.data.map(row => ({
+        const talks = results.data.map(row => ({
           ...row,
-          // Normalize text fields by trimming whitespace
           title: (row.title || '').trim(),
           speaker: (row.speaker || '').trim(),
           calling: (row.calling || '').trim(),
           season: (row.season || '').trim(),
           url: (row.url || '').trim(),
           calling_original: (row.calling_original || '').trim(),
-          // Normalize other fields
           year: Number(row.year) || 0,
           talk: row.talk || '',
           footnotes: row.footnotes || '',
-          // Keep NLP fields as-is
+          source,
           topics: row.topics,
           topic_scores: row.topic_scores,
           primary_topic: row.primary_topic,
@@ -42,13 +32,37 @@ export async function loadTalks(): Promise<Talk[]> {
           primary_emotion_score: row.primary_emotion_score,
           all_emotion_scores: row.all_emotion_scores
         }));
-        resolve(cachedTalks);
+        resolve(talks);
       },
-      error: (error) => {
+      error: (error: Error) => {
         reject(error);
       }
     });
   });
+}
+
+export async function loadTalks(): Promise<Talk[]> {
+  if (cachedTalks) {
+    return cachedTalks;
+  }
+
+  const [modernRes, historicalRes] = await Promise.all([
+    fetch('/conference_talks_cleaned.csv'),
+    fetch('/historical_talks.csv'),
+  ]);
+
+  const [modernCsv, historicalCsv] = await Promise.all([
+    modernRes.text(),
+    historicalRes.text(),
+  ]);
+
+  const [modernTalks, historicalTalks] = await Promise.all([
+    parseCsv(modernCsv, 'modern'),
+    parseCsv(historicalCsv, 'historical'),
+  ]);
+
+  cachedTalks = [...historicalTalks, ...modernTalks];
+  return cachedTalks;
 }
 
 export function getConferences(talks: Talk[]): Conference[] {
@@ -101,4 +115,3 @@ export function getTalksByEra(talks: Talk[], eraName: string): Talk[] {
 export function getTalksByYearRange(talks: Talk[], startYear: number, endYear: number): Talk[] {
   return talks.filter(t => t.year >= startYear && t.year <= endYear);
 }
-

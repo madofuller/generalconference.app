@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Navigation } from '@/components/navigation';
+import { useState, useEffect, useMemo } from 'react';
+import { Navigation, TopAppBar } from '@/components/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { loadTalks, getConferences, getTalksByConference } from '@/lib/data-loader';
+import { useFilteredTalks } from '@/lib/filter-context';
+import { getConferences, getTalksByConference } from '@/lib/data-loader';
 import { Conference, Talk } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -16,20 +17,10 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recha
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
 export default function ConferencesPage() {
-  const [talks, setTalks] = useState<Talk[]>([]);
-  const [conferences, setConferences] = useState<Conference[]>([]);
+  const { talks, loading } = useFilteredTalks();
+  const conferences = useMemo(() => getConferences(talks), [talks]);
   const [selectedConference, setSelectedConference] = useState('');
-  const [loading, setLoading] = useState(true);
   const [conferenceTalks, setConferenceTalks] = useState<Talk[]>([]);
-
-  useEffect(() => {
-    loadTalks().then(data => {
-      setTalks(data);
-      const confs = getConferences(data);
-      setConferences(confs);
-      setLoading(false);
-    });
-  }, []);
 
   useEffect(() => {
     if (selectedConference && talks.length > 0) {
@@ -74,28 +65,21 @@ export default function ConferencesPage() {
 
   if (loading) {
     return (
-      <div className="flex h-screen">
+      <div className="flex min-h-screen">
         <Navigation />
-        <main className="flex-1 overflow-y-auto">
-          <div className="container mx-auto p-8">
-            <p>Loading...</p>
-          </div>
+        <main className="ml-0 lg:ml-[260px] flex-1 flex items-center justify-center">
+          <p className="text-[#524534]">Loading...</p>
         </main>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="flex min-h-screen">
       <Navigation />
-      <main className="flex-1 overflow-y-auto">
-        <div className="container mx-auto p-8">
-          <div className="mb-8">
-            <h1 className="mb-2 text-4xl font-bold">Conferences</h1>
-            <p className="text-xl text-muted-foreground">
-              Detailed information about General Conference sessions
-            </p>
-          </div>
+      <main className="ml-0 lg:ml-[260px] min-h-screen flex-1">
+        <TopAppBar title="Conferences" subtitle="Conference-level statistics" />
+        <div className="px-4 md:px-8 lg:px-12 pb-12 md:pb-24">
 
           <Card className="mb-6">
             <CardHeader>
@@ -129,7 +113,7 @@ export default function ConferencesPage() {
                     <CardTitle className="text-sm font-medium">Total Talks</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-bold">{totalTalks}</div>
+                    <div className="text-xl md:text-3xl font-bold">{totalTalks}</div>
                   </CardContent>
                 </Card>
                 <Card>
@@ -137,7 +121,7 @@ export default function ConferencesPage() {
                     <CardTitle className="text-sm font-medium">Speakers</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-bold">{uniqueSpeakers}</div>
+                    <div className="text-xl md:text-3xl font-bold">{uniqueSpeakers}</div>
                   </CardContent>
                 </Card>
                 <Card>
@@ -145,7 +129,7 @@ export default function ConferencesPage() {
                     <CardTitle className="text-sm font-medium">Scripture References</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-bold">{totalScriptureRefs}</div>
+                    <div className="text-xl md:text-3xl font-bold">{totalScriptureRefs}</div>
                   </CardContent>
                 </Card>
                 <Card>
@@ -153,7 +137,7 @@ export default function ConferencesPage() {
                     <CardTitle className="text-sm font-medium">First-Time Speakers</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-bold">{firstTimeSpeakers.length}</div>
+                    <div className="text-xl md:text-3xl font-bold">{firstTimeSpeakers.length}</div>
                   </CardContent>
                 </Card>
               </div>
@@ -181,7 +165,7 @@ export default function ConferencesPage() {
                   <CardDescription>{totalTalks} talks</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="rounded-md border">
+                  <div className="overflow-x-auto rounded-md border">
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -229,7 +213,7 @@ export default function ConferencesPage() {
                         cx="50%"
                         cy="50%"
                         labelLine={false}
-                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                        label={({ name, percent }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`}
                         outerRadius={80}
                         fill="#8884d8"
                         dataKey="value"
@@ -250,7 +234,7 @@ export default function ConferencesPage() {
           {!selectedConference && (
             <Card>
               <CardContent className="py-8">
-                <p className="text-center text-muted-foreground">
+                <p className="text-center text-[#524534]">
                   Select a conference to view talks and statistics
                 </p>
               </CardContent>

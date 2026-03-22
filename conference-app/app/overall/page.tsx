@@ -1,38 +1,26 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Navigation } from '@/components/navigation';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { useState, useMemo } from 'react';
+import { Navigation, TopAppBar } from '@/components/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { loadTalks, getSpeakers, getTalksByEra } from '@/lib/data-loader';
-import { ERAS, Talk } from '@/lib/types';
+import { useFilteredTalks } from '@/lib/filter-context';
+import { getTalksByEra } from '@/lib/data-loader';
+import { ERAS } from '@/lib/types';
 import { countScriptureReferences } from '@/lib/search-utils';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import Link from 'next/link';
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+const COLORS = ['#1B5E7B', '#8455ef', '#40c2fd', '#f5a623', '#00668a'];
 
 export default function OverallPage() {
-  const [talks, setTalks] = useState<Talk[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { talks, loading } = useFilteredTalks();
   const [selectedEra, setSelectedEra] = useState<string>('all');
-  const [filteredTalks, setFilteredTalks] = useState<Talk[]>([]);
 
-  useEffect(() => {
-    loadTalks().then(data => {
-      setTalks(data);
-      setFilteredTalks(data);
-      setLoading(false);
-    });
-  }, []);
-
-  useEffect(() => {
+  const filteredTalks = useMemo(() => {
     if (selectedEra === 'all') {
-      setFilteredTalks(talks);
-    } else {
-      setFilteredTalks(getTalksByEra(talks, selectedEra));
+      return talks;
     }
+    return getTalksByEra(talks, selectedEra);
   }, [selectedEra, talks]);
 
   // Calculate overall statistics
@@ -86,13 +74,30 @@ export default function OverallPage() {
     { name: 'Pearl of Great Price', value: Math.round(totalScriptureRefs * 0.1) },
   ];
 
+  // Talks by decade for timeline
+  const decadeMap = new Map<number, number>();
+  filteredTalks.forEach(talk => {
+    const decade = Math.floor(talk.year / 10) * 10;
+    decadeMap.set(decade, (decadeMap.get(decade) || 0) + 1);
+  });
+  const decades = Array.from(decadeMap.entries())
+    .map(([decade, count]) => ({ decade, count }))
+    .sort((a, b) => a.decade - b.decade);
+
+  // Donut chart data for topics (using era data as proxy)
+  const donutTotal = talksByEra.reduce((s, e) => s + e.count, 0);
+
   if (loading) {
     return (
-      <div className="flex h-screen">
+      <div className="flex min-h-screen">
         <Navigation />
-        <main className="flex-1 overflow-y-auto">
-          <div className="container mx-auto p-8">
-            <p>Loading...</p>
+        <main className="ml-0 lg:ml-[260px] min-h-screen flex-1 bg-[#fdf9e9]">
+          <TopAppBar title="The Big Picture" subtitle="Conference at a Glance" />
+          <div className="px-4 md:px-8 lg:px-12 py-24 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-12 h-12 rounded-full border-4 border-[#f5a623] border-t-transparent animate-spin" />
+              <p className="text-[#524534] font-medium">Loading conference data...</p>
+            </div>
           </div>
         </main>
       </div>
@@ -100,203 +105,331 @@ export default function OverallPage() {
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="flex min-h-screen">
       <Navigation />
-      <main className="flex-1 overflow-y-auto">
-        <div className="container mx-auto p-8">
-          <div className="mb-8">
-            <h1 className="mb-2 text-4xl font-bold">Overall Statistics</h1>
-            <p className="text-xl text-muted-foreground">
-              Comprehensive statistics across all conference talks
-            </p>
+      <main className="ml-0 lg:ml-[260px] min-h-screen flex-1 bg-[#fdf9e9]">
+        <TopAppBar title="The Big Picture" subtitle="Conference at a Glance" />
+
+        <div className="px-4 md:px-8 lg:px-12 pb-12 md:pb-24 space-y-6 md:space-y-10">
+
+          {/* Era Filter */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 pt-2">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-[#1B5E7B] text-xl">filter_list</span>
+              <span className="text-sm font-bold text-[#524534] uppercase tracking-widest">Filter by Era</span>
+            </div>
+            <Select value={selectedEra} onValueChange={setSelectedEra}>
+              <SelectTrigger className="w-full sm:w-[280px] bg-white rounded-full border-0 shadow-[0px_4px_12px_rgba(27,94,123,0.06)] text-[#1c1c13] font-medium">
+                <SelectValue placeholder="Choose an era" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border-0 shadow-[0px_12px_32px_rgba(27,94,123,0.12)] rounded-xl">
+                <SelectItem value="all">All Eras</SelectItem>
+                {ERAS.map(era => (
+                  <SelectItem key={era.name} value={era.name}>
+                    {era.name} Era ({era.start}-{era.end || 'present'})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
-          {/* Era Selection */}
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Filter by Era</CardTitle>
-              <CardDescription>View statistics for all talks or a specific era</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <Label>Era</Label>
-                <Select value={selectedEra} onValueChange={setSelectedEra}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose an era" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Eras</SelectItem>
-                    {ERAS.map(era => (
-                      <SelectItem key={era.name} value={era.name}>
-                        {era.name} Era ({era.start}-{era.end || 'present'})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+          {/* High-level Stats Bento */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            {[
+              { icon: 'record_voice_over', value: totalTalks.toLocaleString(), label: 'Total Talks', color: '#f5a623' },
+              { icon: 'person_4', value: uniqueSpeakers.toLocaleString(), label: 'Unique Speakers', color: '#8455ef' },
+              { icon: 'calendar_month', value: totalConferences.toLocaleString(), label: 'Conferences', color: '#40c2fd' },
+              { icon: 'history', value: `${minYear}–${maxYear}`, label: `${maxYear - minYear + 1} Years of Talks`, color: '#ba1a1a' },
+            ].map((stat, i) => (
+              <div
+                key={i}
+                className="bg-white rounded-xl shadow-[0px_12px_32px_rgba(27,94,123,0.08)] p-4 md:p-6 lg:p-8 flex flex-col items-center text-center gap-3 transition-all hover:shadow-[0px_16px_40px_rgba(27,94,123,0.12)] hover:-translate-y-0.5"
+              >
+                <div
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center"
+                  style={{ backgroundColor: stat.color + '18' }}
+                >
+                  <span
+                    className="material-symbols-outlined text-3xl"
+                    style={{ color: stat.color, fontVariationSettings: "'FILL' 1" }}
+                  >
+                    {stat.icon}
+                  </span>
+                </div>
+                <div className="text-2xl md:text-4xl font-extrabold text-[#1c1c13] tracking-tight">{stat.value}</div>
+                <div className="text-sm font-medium text-[#524534]">{stat.label}</div>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Summary Statistics */}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 mb-6">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Total Talks</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{totalTalks}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Unique Speakers</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{uniqueSpeakers}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Conferences</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{totalConferences}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Scripture Refs</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{totalScriptureRefs}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Refs per Talk</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{avgRefsPerTalk}</div>
-              </CardContent>
-            </Card>
+            ))}
           </div>
 
-          {/* Year Range */}
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Time Period</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-xl">
-                {minYear} - {maxYear} ({maxYear - minYear + 1} years)
-              </p>
-            </CardContent>
-          </Card>
+          {/* Most Frequent Voices + Did You Know */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            {/* Most Frequent Voices - Bar Chart */}
+            <div className="col-span-1 sm:col-span-2 bg-white rounded-xl shadow-[0px_12px_32px_rgba(27,94,123,0.08)] p-4 md:p-6 lg:p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <span className="material-symbols-outlined text-[#1B5E7B] text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>mic</span>
+                <h2 className="text-xl font-bold text-[#1c1c13]">Most Frequent Voices</h2>
+              </div>
+              <div className="space-y-3">
+                {topSpeakers.slice(0, 10).map((s, i) => {
+                  const maxCount = topSpeakers[0]?.count || 1;
+                  const pct = (s.count / maxCount) * 100;
+                  return (
+                    <div key={i} className="flex items-center gap-4">
+                      <span className="w-6 text-right text-xs font-bold text-[#524534]/60">{i + 1}</span>
+                      <span className="w-24 sm:w-44 text-sm font-medium text-[#1c1c13] truncate">{s.speaker}</span>
+                      <div className="flex-1 h-7 bg-[#f8f4e4] rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full flex items-center justify-end pr-3 transition-all duration-500"
+                          style={{
+                            width: `${Math.max(pct, 8)}%`,
+                            background: 'linear-gradient(45deg, #1B5E7B, #f5a623)',
+                          }}
+                        >
+                          <span className="text-xs font-bold text-white drop-shadow-sm">{s.count}</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
 
-          {/* Charts */}
-          <div className="grid gap-6 lg:grid-cols-2 mb-6">
-            {/* Talks by Era */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Talks by Era</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={talksByEra}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="era" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="count" fill="#8884d8" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
+            {/* Did You Know? */}
+            <div className="space-y-5">
+              <div className="flex items-center gap-3 mb-1">
+                <span className="material-symbols-outlined text-[#1B5E7B] text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>lightbulb</span>
+                <h2 className="text-xl font-bold text-[#1c1c13]">Did You Know?</h2>
+              </div>
 
-            {/* Scripture Volume Distribution */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Scripture Volume Distribution</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
+              <div className="bg-white rounded-xl shadow-[0px_12px_32px_rgba(27,94,123,0.08)] p-6 border-l-4 border-[#1B5E7B]">
+                <p className="text-sm text-[#524534] leading-relaxed">
+                  <span className="font-bold text-[#1B5E7B]">{totalScriptureRefs.toLocaleString()}</span> scripture references
+                  have been made across all talks, averaging <span className="font-bold text-[#1B5E7B]">{avgRefsPerTalk}</span> per talk.
+                </p>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-[0px_12px_32px_rgba(27,94,123,0.08)] p-6 border-l-4 border-[#8455ef]">
+                <p className="text-sm text-[#524534] leading-relaxed">
+                  The dataset spans <span className="font-bold text-[#8455ef]">{maxYear - minYear + 1} years</span> of
+                  General Conference, from {minYear} to {maxYear}.
+                </p>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-[0px_12px_32px_rgba(27,94,123,0.08)] p-6 border-l-4 border-[#00668a]">
+                <p className="text-sm text-[#524534] leading-relaxed">
+                  The most prolific speaker, <span className="font-bold text-[#00668a]">{topSpeakers[0]?.speaker}</span>,
+                  has given <span className="font-bold text-[#00668a]">{topSpeakers[0]?.count}</span> conference talks.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Topics Donut + Talks by Era */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            {/* Donut Chart */}
+            <div className="bg-white rounded-xl shadow-[0px_12px_32px_rgba(27,94,123,0.08)] p-4 md:p-6 lg:p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <span className="material-symbols-outlined text-[#1B5E7B] text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>donut_large</span>
+                <h2 className="text-xl font-bold text-[#1c1c13]">Scripture Volume Distribution</h2>
+              </div>
+              <div className="flex flex-col md:flex-row items-center gap-8">
+                <ResponsiveContainer width="100%" height={240}>
                   <PieChart>
                     <Pie
                       data={volumeData}
                       cx="50%"
                       cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                      outerRadius={80}
-                      fill="#8884d8"
+                      innerRadius={55}
+                      outerRadius={95}
+                      paddingAngle={3}
                       dataKey="value"
+                      stroke="none"
                     >
-                      {volumeData.map((entry, index) => (
+                      {volumeData.map((_, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip />
-                    <Legend />
+                    <Tooltip
+                      contentStyle={{
+                        background: 'white',
+                        border: 'none',
+                        borderRadius: '12px',
+                        boxShadow: '0px 8px 24px rgba(27,94,123,0.12)',
+                        fontSize: '13px',
+                      }}
+                    />
                   </PieChart>
                 </ResponsiveContainer>
-              </CardContent>
-            </Card>
+                <div className="flex-1 space-y-3">
+                  {volumeData.map((v, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: COLORS[i] }} />
+                      <span className="text-sm text-[#524534]">{v.name}</span>
+                      <span className="ml-auto text-sm font-bold text-[#1c1c13]">{v.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Talks by Era */}
+            <div className="bg-white rounded-xl shadow-[0px_12px_32px_rgba(27,94,123,0.08)] p-4 md:p-6 lg:p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <span className="material-symbols-outlined text-[#1B5E7B] text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>bar_chart</span>
+                <h2 className="text-xl font-bold text-[#1c1c13]">Talks by Era</h2>
+              </div>
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={talksByEra} barCategoryGap="20%">
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f2eede" vertical={false} />
+                  <XAxis
+                    dataKey="era"
+                    tick={{ fontSize: 11, fill: '#524534' }}
+                    axisLine={{ stroke: '#f2eede' }}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11, fill: '#524534' }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      background: 'white',
+                      border: 'none',
+                      borderRadius: '12px',
+                      boxShadow: '0px 8px 24px rgba(27,94,123,0.12)',
+                      fontSize: '13px',
+                    }}
+                  />
+                  <Bar dataKey="count" fill="#1B5E7B" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
 
           {/* Talks Over Time */}
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Talks Over Time</CardTitle>
-              <CardDescription>Number of talks per year</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={talksByYear}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="year" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="count" fill="#82ca9d" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          <div className="bg-white rounded-xl shadow-[0px_12px_32px_rgba(27,94,123,0.08)] p-4 md:p-6 lg:p-8">
+            <div className="flex items-center gap-3 mb-6">
+              <span className="material-symbols-outlined text-[#1B5E7B] text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>timeline</span>
+              <h2 className="text-xl font-bold text-[#1c1c13]">Talks Over Time</h2>
+              <span className="text-sm text-[#524534]/60 ml-2">Number of talks per year</span>
+            </div>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={talksByYear}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f2eede" vertical={false} />
+                <XAxis
+                  dataKey="year"
+                  tick={{ fontSize: 10, fill: '#524534' }}
+                  axisLine={{ stroke: '#f2eede' }}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize: 11, fill: '#524534' }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip
+                  contentStyle={{
+                    background: 'white',
+                    border: 'none',
+                    borderRadius: '12px',
+                    boxShadow: '0px 8px 24px rgba(27,94,123,0.12)',
+                    fontSize: '13px',
+                  }}
+                />
+                <Bar dataKey="count" fill="#f5a623" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
 
-          {/* Top Speakers */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Top 20 Speakers by Talk Count</CardTitle>
-              <CardDescription>Speakers with the most conference talks</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-16">Rank</TableHead>
-                      <TableHead>Speaker</TableHead>
-                      <TableHead className="text-right">Talks</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {topSpeakers.map((stat, idx) => (
-                      <TableRow key={idx}>
-                        <TableCell className="font-medium">{idx + 1}</TableCell>
-                        <TableCell>{stat.speaker}</TableCell>
-                        <TableCell className="text-right">{stat.count}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Through the Decades Timeline */}
+          <div className="bg-white rounded-xl shadow-[0px_12px_32px_rgba(27,94,123,0.08)] p-4 md:p-6 lg:p-8">
+            <div className="flex items-center gap-3 mb-6">
+              <span className="material-symbols-outlined text-[#1B5E7B] text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>update</span>
+              <h2 className="text-xl font-bold text-[#1c1c13]">Through the Decades</h2>
+            </div>
+            <div className="rounded-xl overflow-hidden">
+              {decades.map((d, i) => (
+                <div
+                  key={d.decade}
+                  className="flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 transition-colors"
+                  style={{ backgroundColor: i % 2 === 0 ? '#fdf9e9' : '#f8f4e4' }}
+                >
+                  <div className="flex items-center gap-4">
+                    <span className="text-lg font-extrabold text-[#1B5E7B] w-16">{d.decade}s</span>
+                    <div className="h-2 rounded-full bg-[#f2eede] w-32 sm:w-64 overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-700"
+                        style={{
+                          width: `${(d.count / Math.max(...decades.map(x => x.count))) * 100}%`,
+                          background: `linear-gradient(90deg, #1B5E7B, ${i % 2 === 0 ? '#f5a623' : '#8455ef'})`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <span className="text-sm font-bold text-[#1c1c13]">{d.count.toLocaleString()} talks</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Top 20 Speakers Full Table */}
+          <div className="bg-white rounded-xl shadow-[0px_12px_32px_rgba(27,94,123,0.08)] p-4 md:p-6 lg:p-8">
+            <div className="flex items-center gap-3 mb-6">
+              <span className="material-symbols-outlined text-[#1B5E7B] text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>group</span>
+              <h2 className="text-xl font-bold text-[#1c1c13]">Top 20 Speakers</h2>
+              <span className="text-sm text-[#524534]/60 ml-2">By total talk count</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
+              {topSpeakers.map((stat, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center gap-4 py-3 px-4 rounded-lg transition-colors hover:bg-[#fdf9e9]"
+                  style={{ borderBottom: '1px solid #f2eede' }}
+                >
+                  <span
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-extrabold shrink-0"
+                    style={{
+                      backgroundColor: idx < 3 ? '#f5a623' : '#f2eede',
+                      color: idx < 3 ? 'white' : '#524534',
+                    }}
+                  >
+                    {idx + 1}
+                  </span>
+                  <span className="flex-1 text-sm font-medium text-[#1c1c13] truncate">{stat.speaker}</span>
+                  <span className="text-sm font-bold text-[#1B5E7B]">{stat.count}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* CTA Footer */}
+          <div className="bg-white rounded-xl shadow-[0px_12px_32px_rgba(27,94,123,0.08)] p-5 md:p-8 lg:p-10 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div>
+              <h3 className="text-2xl font-bold text-[#1c1c13] mb-2">Ready to explore further?</h3>
+              <p className="text-[#524534]">Use AI-powered search or export your own insights report.</p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
+              <Link
+                href="/ask"
+                className="bg-[#1B5E7B] text-white px-6 sm:px-8 py-4 rounded-full font-bold text-sm shadow-[0px_8px_24px_rgba(27,94,123,0.2)] hover:shadow-[0px_12px_32px_rgba(245,166,35,0.4)] transition-all active:scale-95 flex items-center justify-center gap-2"
+              >
+                <span className="material-symbols-outlined text-lg">auto_awesome</span>
+                Start New AI Search
+              </Link>
+              <button
+                onClick={() => window.print()}
+                className="bg-[#f8f4e4] text-[#1B5E7B] px-6 sm:px-8 py-4 rounded-full font-bold text-sm hover:bg-[#f2eede] transition-all active:scale-95 flex items-center justify-center gap-2"
+              >
+                <span className="material-symbols-outlined text-lg">download</span>
+                Export Insights Report
+              </button>
+            </div>
+          </div>
+
         </div>
       </main>
     </div>
   );
 }
-
-
-

@@ -1,14 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Navigation } from '@/components/navigation';
+import { useState, useEffect, useMemo } from 'react';
+import { Navigation, TopAppBar } from '@/components/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
-import { loadTalks, getSpeakers, getConferences, getTalksBySpeaker } from '@/lib/data-loader';
+import { getSpeakers, getConferences, getTalksBySpeaker } from '@/lib/data-loader';
 import { Conference, Talk } from '@/lib/types';
+import { useFilteredTalks } from '@/lib/filter-context';
 import { countScriptureReferences } from '@/lib/search-utils';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { Badge } from '@/components/ui/badge';
@@ -17,26 +18,17 @@ import { ExternalLink } from 'lucide-react';
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
 export default function TalksPage() {
-  const [talks, setTalks] = useState<Talk[]>([]);
-  const [speakers, setSpeakers] = useState<string[]>([]);
-  const [conferences, setConferences] = useState<Conference[]>([]);
+  const { talks, loading } = useFilteredTalks();
   const [selectedTalk, setSelectedTalk] = useState<Talk | null>(null);
-  const [loading, setLoading] = useState(true);
-  
+
   const [selectionType, setSelectionType] = useState<'speakers' | 'conferences'>('speakers');
   const [selectedSpeaker, setSelectedSpeaker] = useState('');
   const [selectedConference, setSelectedConference] = useState('');
   const [speakerTalks, setSpeakerTalks] = useState<Talk[]>([]);
   const [filterByCount, setFilterByCount] = useState(false);
 
-  useEffect(() => {
-    loadTalks().then(data => {
-      setTalks(data);
-      setSpeakers(getSpeakers(data));
-      setConferences(getConferences(data));
-      setLoading(false);
-    });
-  }, []);
+  const speakers = useMemo(() => getSpeakers(talks), [talks]);
+  const conferences = useMemo(() => getConferences(talks), [talks]);
 
   useEffect(() => {
     if (selectionType === 'speakers' && selectedSpeaker) {
@@ -72,28 +64,21 @@ export default function TalksPage() {
 
   if (loading) {
     return (
-      <div className="flex h-screen">
+      <div className="flex min-h-screen">
         <Navigation />
-        <main className="flex-1 overflow-y-auto">
-          <div className="container mx-auto p-8">
-            <p>Loading...</p>
-          </div>
+        <main className="ml-0 lg:ml-[260px] flex-1 flex items-center justify-center">
+          <p className="text-[#524534]">Loading...</p>
         </main>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="flex min-h-screen">
       <Navigation />
-      <main className="flex-1 overflow-y-auto">
-        <div className="container mx-auto p-8">
-          <div className="mb-8">
-            <h1 className="mb-2 text-4xl font-bold">Talks</h1>
-            <p className="text-xl text-muted-foreground">
-              Detailed statistics about individual conference talks
-            </p>
-          </div>
+      <main className="ml-0 lg:ml-[260px] min-h-screen flex-1">
+        <TopAppBar title="Talks" subtitle="Individual talk analysis" />
+        <div className="px-4 md:px-8 lg:px-12 pb-12 md:pb-24">
 
           <Card className="mb-6">
             <CardHeader>
@@ -208,34 +193,43 @@ export default function TalksPage() {
                 <CardContent className="space-y-4">
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
-                      <p className="text-sm text-muted-foreground">Speaker</p>
+                      <p className="text-sm text-[#524534]">Speaker</p>
                       <p className="text-lg font-semibold">{selectedTalk.speaker}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Calling</p>
+                      <p className="text-sm text-[#524534]">Calling</p>
                       <p className="text-lg font-semibold">{selectedTalk.calling}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Conference</p>
+                      <p className="text-sm text-[#524534]">Conference</p>
                       <p className="text-lg font-semibold">
                         {selectedTalk.season} {selectedTalk.year}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Scripture References</p>
+                      <p className="text-sm text-[#524534]">Scripture References</p>
                       <p className="text-lg font-semibold">{scriptureRefs}</p>
                     </div>
                   </div>
-                  <div>
-                    <a 
-                      href={selectedTalk.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800"
-                    >
-                      View on ChurchofJesusChrist.org
-                      <ExternalLink className="h-4 w-4" />
-                    </a>
+                  <div className="flex flex-wrap items-center gap-3">
+                    {selectedTalk.url && (
+                      <a
+                        href={selectedTalk.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800"
+                      >
+                        {selectedTalk.source === 'historical'
+                          ? 'View source PDF on Internet Archive'
+                          : 'View on ChurchofJesusChrist.org'}
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                    )}
+                    {selectedTalk.source === 'historical' && (
+                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-50 border border-amber-200 rounded text-[10px] font-medium text-amber-800">
+                        OCR Source — may contain errors
+                      </span>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -255,7 +249,7 @@ export default function TalksPage() {
                           cx="50%"
                           cy="50%"
                           labelLine={false}
-                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                          label={({ name, percent }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`}
                           outerRadius={80}
                           fill="#8884d8"
                           dataKey="value"
@@ -278,11 +272,11 @@ export default function TalksPage() {
                   <CardTitle>Talk Preview</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap line-clamp-10">
+                  <p className="text-sm text-[#524534] whitespace-pre-wrap line-clamp-10">
                     {selectedTalk.talk.substring(0, 1000)}
                     {selectedTalk.talk.length > 1000 && '...'}
                   </p>
-                  <p className="mt-4 text-xs text-muted-foreground">
+                  <p className="mt-4 text-xs text-[#524534]">
                     Showing first {Math.min(1000, selectedTalk.talk.length)} characters. 
                     Visit the full talk for complete content.
                   </p>
@@ -294,7 +288,7 @@ export default function TalksPage() {
           {!selectedTalk && speakerTalks.length === 0 && (
             <Card>
               <CardContent className="py-8">
-                <p className="text-center text-muted-foreground">
+                <p className="text-center text-[#524534]">
                   Select a speaker or conference to view available talks
                 </p>
               </CardContent>
@@ -304,7 +298,7 @@ export default function TalksPage() {
           {!selectedTalk && speakerTalks.length > 0 && (
             <Card>
               <CardContent className="py-8">
-                <p className="text-center text-muted-foreground">
+                <p className="text-center text-[#524534]">
                   Select a talk from the dropdown to view its details
                 </p>
               </CardContent>

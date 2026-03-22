@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Navigation } from '@/components/navigation';
+import { useState, useMemo } from 'react';
+import { Navigation, TopAppBar } from '@/components/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -9,33 +9,24 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
-import { useFilters } from '@/lib/filter-context';
-import { loadTalks, getConferences, getSpeakers } from '@/lib/data-loader';
+import { useFilters, useFilteredTalks } from '@/lib/filter-context';
+import { getConferences, getSpeakers } from '@/lib/data-loader';
 import { ERAS, PRESIDENTS_OF_THE_CHURCH, LIVING_PROPHETS, SearchFilters } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function FiltersPage() {
   const { filters, setFilters, resetFilters } = useFilters();
+  const { talks, loading } = useFilteredTalks();
   const [filterType, setFilterType] = useState<'none' | 'speaker' | 'conference' | 'era' | 'year'>(filters.type);
   const [speakerFilterType, setSpeakerFilterType] = useState<'presidents' | 'living' | 'custom'>('custom');
   const [selectedSpeakers, setSelectedSpeakers] = useState<string[]>(filters.speakers || []);
   const [selectedConference, setSelectedConference] = useState<string>(filters.conference || '');
   const [selectedEra, setSelectedEra] = useState<string>(filters.era || '');
   const [yearRange, setYearRange] = useState<[number, number]>(filters.yearRange || [1971, 2025]);
-  
-  const [conferences, setConferences] = useState<string[]>([]);
-  const [speakers, setSpeakers] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadTalks().then(talks => {
-      const confs = getConferences(talks);
-      setConferences(confs.map(c => c.label));
-      setSpeakers(getSpeakers(talks));
-      setLoading(false);
-    });
-  }, []);
+  const conferences = useMemo(() => getConferences(talks).map(c => c.label), [talks]);
+  const speakers = useMemo(() => getSpeakers(talks), [talks]);
 
   const handleSetFilter = () => {
     const newFilters: SearchFilters = { type: filterType };
@@ -95,28 +86,21 @@ export default function FiltersPage() {
 
   if (loading) {
     return (
-      <div className="flex h-screen">
+      <div className="flex min-h-screen">
         <Navigation />
-        <main className="flex-1 overflow-y-auto">
-          <div className="container mx-auto p-8">
-            <p>Loading...</p>
-          </div>
+        <main className="ml-0 lg:ml-[260px] flex-1 flex items-center justify-center">
+          <p className="text-[#524534]">Loading...</p>
         </main>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="flex min-h-screen">
       <Navigation />
-      <main className="flex-1 overflow-y-auto">
-        <div className="container mx-auto p-8">
-          <div className="mb-8">
-            <h1 className="mb-2 text-4xl font-bold">Filters</h1>
-            <p className="text-xl text-muted-foreground">
-              Refine search results in Scriptures, Word Search, and Phrase Search tabs
-            </p>
-          </div>
+      <main className="ml-0 lg:ml-[260px] min-h-screen flex-1">
+        <TopAppBar title="Filters" subtitle="Filter and refine your search" />
+        <div className="px-4 md:px-8 lg:px-12 pb-12 md:pb-24">
 
           {/* Current Filter Status */}
           <Card className="mb-6 border-2 border-primary">
@@ -124,7 +108,7 @@ export default function FiltersPage() {
               <CardTitle>Current Filter Status</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div>
                   <p className="text-lg font-medium">{getCurrentFilterDescription()}</p>
                   {filters.type !== 'none' && filters.speakers && (
@@ -220,7 +204,7 @@ export default function FiltersPage() {
                           ))}
                         </div>
                       </ScrollArea>
-                      <p className="mt-2 text-sm text-muted-foreground">
+                      <p className="mt-2 text-sm text-[#524534]">
                         {selectedSpeakers.length} speaker(s) selected
                       </p>
                     </div>
@@ -293,7 +277,7 @@ export default function FiltersPage() {
               <CardTitle>How Filters Work</CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
+              <ul className="list-disc list-inside space-y-2 text-sm text-[#524534]">
                 <li>Filters only apply to the Scriptures, Word Search, and Phrase Search tabs</li>
                 <li>After setting a filter, navigate to one of these tabs and perform a search</li>
                 <li>The Speakers, Conferences, Talks, and Overall tabs are not affected by filters</li>
