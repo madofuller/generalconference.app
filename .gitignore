@@ -35,6 +35,7 @@ data/*.csv
 data/*.json
 *.csv
 *.json
+!vercel.json
 !conference-app/package*.json
 !conference-app/tsconfig.json
 !conference-app/components.json
