@@ -23,7 +23,7 @@ export default function SpeakerHubPage() {
   return (
     <div className="flex min-h-screen">
       <Navigation />
-      <main className="ml-0 lg:ml-[260px] min-h-screen flex-1 min-w-0 overflow-x-hidden" style={{ background: '#fdf9e9' }}>
+      <main className="ml-0 lg:ml-[260px] min-h-screen flex-1 min-w-0 overflow-x-hidden pt-20 lg:pt-0" style={{ background: '#fdf9e9' }}>
         <TopAppBar title="Speaker Insights" subtitle="Explore speaker journeys, stats, and patterns" />
         <Suspense fallback={null}>
           <PageTabs tabs={TABS} defaultTab="journeys">

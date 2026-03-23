@@ -18,7 +18,7 @@ export default function TopicPairsPage() {
   return (
     <div className="flex min-h-screen">
       <Navigation />
-      <main className="ml-0 lg:ml-[260px] min-h-screen flex-1" style={{ background: '#fdf9e9' }}>
+      <main className="ml-0 lg:ml-[260px] min-h-screen flex-1 pt-20 lg:pt-0" style={{ background: '#fdf9e9' }}>
         <TopAppBar title={data.title} subtitle={data.subtitle} />
         <div className="px-4 md:px-8 lg:px-12 pb-12 md:pb-24">
           <div className="bg-white p-4 md:p-6 lg:p-8 rounded-xl shadow-[0px_12px_32px_rgba(27,94,123,0.06)]">

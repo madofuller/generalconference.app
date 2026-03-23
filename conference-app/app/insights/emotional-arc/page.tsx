@@ -433,7 +433,7 @@ export default function EmotionalArcPage() {
   return (
     <div className="flex min-h-screen">
       <Navigation />
-      <main className="ml-0 lg:ml-[260px] min-h-screen flex-1">
+      <main className="ml-0 lg:ml-[260px] min-h-screen flex-1 pt-20 lg:pt-0">
         <TopAppBar title="Emotional Arc" subtitle="How emotions flow across a conference weekend" />
         <div className="mx-auto w-full min-w-0 max-w-7xl px-4 md:px-8 lg:px-12 pb-12 md:pb-24">
           <div className="bg-[#8B5CF6]/5 border border-[#8B5CF6]/20 p-4 md:p-6 rounded-xl mb-4 md:mb-6">

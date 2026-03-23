@@ -119,7 +119,7 @@ export default function OverallPage() {
     return (
       <div className="flex min-h-screen">
         <Navigation />
-        <main className="ml-0 lg:ml-[260px] min-h-screen flex-1 bg-[#fdf9e9]">
+        <main className="ml-0 lg:ml-[260px] min-h-screen flex-1 bg-[#fdf9e9] pt-20 lg:pt-0">
           <TopAppBar title="The Big Picture" subtitle="Conference at a Glance" />
           <div className="px-4 md:px-8 lg:px-12 py-24 flex items-center justify-center">
             <div className="flex flex-col items-center gap-4">
@@ -135,7 +135,7 @@ export default function OverallPage() {
   return (
     <div className="flex min-h-screen">
       <Navigation />
-      <main className="ml-0 lg:ml-[260px] min-h-screen flex-1 bg-[#fdf9e9]">
+      <main className="ml-0 lg:ml-[260px] min-h-screen flex-1 bg-[#fdf9e9] pt-20 lg:pt-0">
         <TopAppBar title="The Big Picture" subtitle="Conference at a Glance" />
 
         <div className="px-4 md:px-8 lg:px-12 pb-12 md:pb-24 space-y-6 md:space-y-10">

@@ -142,7 +142,7 @@ export default function WordlePage() {
   return (
     <div className="flex min-h-screen">
       <Navigation />
-      <main className="ml-0 lg:ml-[260px] min-h-screen flex-1">
+      <main className="ml-0 lg:ml-[260px] min-h-screen flex-1 pt-20 lg:pt-0">
         <TopAppBar title="Conference Wordle" subtitle="Guess today's sacred word" hideEraToggle />
 
         <div className="px-2 sm:px-4 md:px-8 pb-8 max-w-lg mx-auto flex flex-col items-center gap-3 sm:gap-4">

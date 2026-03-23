@@ -200,7 +200,7 @@ export default function EmotionsPage() {
     return (
       <div className="flex min-h-screen">
         <Navigation />
-        <main className="ml-0 lg:ml-[260px] min-h-screen flex-1 bg-[#fdf9e9]">
+        <main className="ml-0 lg:ml-[260px] min-h-screen flex-1 bg-[#fdf9e9] pt-20 lg:pt-0">
           <TopAppBar title="The Heart of Conference" subtitle="Emotional insights from over 4,000 addresses" />
           <div className="px-4 md:px-8 lg:px-12 pb-20 flex items-center justify-center min-h-[60vh]">
             <div className="flex flex-col items-center gap-4">
@@ -217,7 +217,7 @@ export default function EmotionsPage() {
     return (
       <div className="flex min-h-screen">
         <Navigation />
-        <main className="ml-0 lg:ml-[260px] min-h-screen flex-1 bg-[#fdf9e9]">
+        <main className="ml-0 lg:ml-[260px] min-h-screen flex-1 bg-[#fdf9e9] pt-20 lg:pt-0">
           <TopAppBar title="The Heart of Conference" subtitle="Emotional insights from over 4,000 addresses" />
           <div className="px-4 md:px-8 lg:px-12 pb-20 space-y-12">
             <div className="bg-white rounded-xl p-5 md:p-8 lg:p-10 shadow-[0px_12px_32px_rgba(27,94,123,0.06)]">
@@ -245,7 +245,7 @@ export default function EmotionsPage() {
   return (
     <div className="flex min-h-screen">
       <Navigation />
-      <main className="ml-0 lg:ml-[260px] min-h-screen flex-1 bg-[#fdf9e9]">
+      <main className="ml-0 lg:ml-[260px] min-h-screen flex-1 bg-[#fdf9e9] pt-20 lg:pt-0">
         <TopAppBar title="The Heart of Conference" subtitle="Emotional insights from over 4,000 addresses" />
 
         <div className="px-4 md:px-8 lg:px-12 pb-12 md:pb-20 space-y-6 md:space-y-12">

@@ -81,7 +81,7 @@ export default function Home() {
   return (
     <div className="flex min-h-screen">
       <Navigation />
-      <main className="ml-0 lg:ml-[260px] min-h-screen flex-1 overflow-x-hidden" style={{ background: '#fdf9e9' }}>
+      <main className="ml-0 lg:ml-[260px] min-h-screen flex-1 overflow-x-hidden pt-20 lg:pt-0" style={{ background: '#fdf9e9' }}>
         <TopAppBar title="GeneralConference.app" hideEraToggle />
 
         <div className="px-4 sm:px-6 md:px-8 lg:px-12 pb-20 md:pb-24 space-y-8 md:space-y-14">

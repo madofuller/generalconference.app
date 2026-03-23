@@ -120,7 +120,7 @@ export default function MembershipPage() {
   return (
     <div className="flex min-h-screen">
       <Navigation />
-      <main className="ml-0 lg:ml-[260px] min-h-screen flex-1" style={{ background: '#fdf9e9' }}>
+      <main className="ml-0 lg:ml-[260px] min-h-screen flex-1 pt-20 lg:pt-0" style={{ background: '#fdf9e9' }}>
         <TopAppBar title="Church Growth" subtitle="Membership from 1829 to present" hideEraToggle />
         <div className="px-4 md:px-8 lg:px-12 pb-12 md:pb-24">
 

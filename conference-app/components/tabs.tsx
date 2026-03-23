@@ -74,7 +74,7 @@ export function PageTabs({ tabs, defaultTab, children }: PageTabsProps) {
   return (
     <>
       {/* Tab Bar */}
-      <div className="sticky top-[132px] lg:top-[64px] z-20 bg-[#fdf9e9]/90 backdrop-blur-md border-b border-[#ece8d9]">
+      <div className="sticky top-20 lg:top-[64px] z-20 bg-[#fdf9e9]/90 backdrop-blur-md border-b border-[#ece8d9]">
         <div className="relative overflow-hidden">
           {/* Left fade */}
           {canScrollLeft && (

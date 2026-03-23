@@ -21,7 +21,7 @@ export default function PeoplePage() {
   return (
     <div className="flex min-h-screen">
       <Navigation />
-      <main className="ml-0 lg:ml-[260px] min-h-screen flex-1 min-w-0 overflow-x-hidden" style={{ background: '#fdf9e9' }}>
+      <main className="ml-0 lg:ml-[260px] min-h-screen flex-1 min-w-0 overflow-x-hidden pt-20 lg:pt-0" style={{ background: '#fdf9e9' }}>
         <TopAppBar title="People" subtitle="Apostles, Seventies, Women leaders, and speaker tracking" />
         <Suspense fallback={null}>
           <PageTabs tabs={tabs} defaultTab="apostles">
