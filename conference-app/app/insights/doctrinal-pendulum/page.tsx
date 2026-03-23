@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { Navigation, TopAppBar } from '@/components/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useFilteredTalks } from '@/lib/filter-context';
+import { useFilteredFullTalks } from '@/lib/filter-context';
 import { Talk } from '@/lib/types';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -86,7 +86,7 @@ function computePendulum(talks: Talk[], tension: TensionPair) {
 }
 
 export default function DoctrinalPendulumPage() {
-  const { talks, loading } = useFilteredTalks();
+  const { talks, loading } = useFilteredFullTalks();
   const [selectedIdx, setSelectedIdx] = useState(0);
 
   const allData = useMemo(() => TENSIONS.map(t => ({ tension: t, data: computePendulum(talks, t) })), [talks]);
@@ -113,9 +113,9 @@ export default function DoctrinalPendulumPage() {
         <TopAppBar title="The Doctrinal Pendulum" subtitle="How emphasis swings between theological tensions" />
         <div className="px-4 md:px-8 lg:px-12 pb-12 md:pb-24 max-w-7xl">
 
-          <Card className="mb-6 border-violet-200 bg-violet-50/50">
-            <CardContent className="pt-6">
-              <p className="text-lg font-medium text-violet-900">
+          <Card className="mb-4 md:mb-6 border-violet-200 bg-violet-50/50 overflow-hidden">
+            <CardContent className="pt-4 md:pt-6">
+              <p className="text-sm md:text-lg font-medium text-violet-900">
                 Conference emphasis swings between theological poles over the decades. See the cyclical nature of doctrinal emphasis that members intuitively feel.
               </p>
             </CardContent>

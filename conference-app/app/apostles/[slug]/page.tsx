@@ -1,21 +1,39 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { Navigation, TopAppBar } from '@/components/navigation';
 import { loadInsights, ApostleProfile } from '@/lib/insights';
+import { loadTalks } from '@/lib/data-loader';
+import { Talk } from '@/lib/types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 
 export default function ApostleDetailPage() {
   const params = useParams();
   const [profile, setProfile] = useState<ApostleProfile | null>(null);
+  const [allTalks, setAllTalks] = useState<Talk[]>([]);
 
   useEffect(() => {
     loadInsights().then(i => {
       const p = (i.apostleProfiles || []).find(a => a.slug === params.slug);
       setProfile(p || null);
     });
+    loadTalks().then(setAllTalks);
   }, [params.slug]);
+
+  // Build a URL lookup from the index data
+  const urlMap = useMemo(() => {
+    const map = new Map<string, string>();
+    if (profile && allTalks.length > 0) {
+      const speakerTalks = allTalks.filter(t => t.speaker === profile.name);
+      speakerTalks.forEach(t => {
+        if (t.url) {
+          map.set(`${t.title}|${t.year}|${t.season}`, t.url);
+        }
+      });
+    }
+    return map;
+  }, [profile, allTalks]);
 
   if (!profile) {
     return (
@@ -84,10 +102,10 @@ export default function ApostleDetailPage() {
             <div className="bg-white p-4 md:p-6 lg:p-8 rounded-xl shadow-[0px_12px_32px_rgba(27,94,123,0.06)] mb-10">
               <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-[#1B5E7B]/60 mb-4">Most Quoted Scriptures</h3>
               <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={profile.topScriptures.slice(0, 10)} layout="vertical" margin={{ left: 20 }}>
+                <BarChart data={profile.topScriptures.slice(0, 10).map(s => ({ scripture: s.ref, count: s.count }))} layout="vertical" margin={{ left: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#ece8d9" />
                   <XAxis type="number" />
-                  <YAxis type="category" dataKey="ref" width={120} tick={{ fontSize: 11, fill: '#1c1c13' }} />
+                  <YAxis type="category" dataKey="scripture" width={120} tick={{ fontSize: 11, fill: '#1c1c13' }} />
                   <Tooltip />
                   <Bar dataKey="count" fill="#f5a623" radius={[0, 6, 6, 0]} />
                 </BarChart>
@@ -118,15 +136,26 @@ export default function ApostleDetailPage() {
                 All Conference Talks ({profile.talks.length})
               </h3>
               <div className="space-y-2">
-                {profile.talks.map((t, i) => (
-                  <div key={i} className="flex items-center justify-between py-2 border-b border-[#ece8d9] last:border-0">
-                    <div>
-                      <p className="font-medium text-[#1c1c13] text-sm">{t.title}</p>
-                      <p className="text-xs text-[#1c1c13]/40">{t.season} {t.year} &middot; {t.wordCount.toLocaleString()} words</p>
+                {profile.talks.map((t, i) => {
+                  const url = urlMap.get(`${t.title}|${t.year}|${t.season}`);
+                  const inner = (
+                    <div className={`flex items-center justify-between py-2 border-b border-[#ece8d9] last:border-0 ${url ? 'hover:bg-[#f5a623]/5 -mx-2 px-2 rounded-lg transition-colors' : ''}`}>
+                      <div>
+                        <p className="font-medium text-[#1c1c13] text-sm">
+                          {t.title}
+                          {url && <span className="material-symbols-outlined text-[#1B5E7B]/40 text-sm ml-1 align-middle">open_in_new</span>}
+                        </p>
+                        <p className="text-xs text-[#1c1c13]/40">{t.season} {t.year} &middot; {t.wordCount.toLocaleString()} words</p>
+                      </div>
+                      <span className="text-xs text-[#1B5E7B] font-bold">{t.year}</span>
                     </div>
-                    <span className="text-xs text-[#1B5E7B] font-bold">{t.year}</span>
-                  </div>
-                ))}
+                  );
+                  return url ? (
+                    <a key={i} href={url} target="_blank" rel="noopener noreferrer">{inner}</a>
+                  ) : (
+                    <div key={i}>{inner}</div>
+                  );
+                })}
               </div>
             </div>
           )}

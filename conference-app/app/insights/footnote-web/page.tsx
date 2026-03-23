@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Navigation, TopAppBar } from '@/components/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useFilteredTalks } from '@/lib/filter-context';
+import { useFilteredFullTalks } from '@/lib/filter-context';
 import { Talk } from '@/lib/types';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -84,7 +84,7 @@ function buildCitationGraph(talks: Talk[], minTalks: number = 10) {
 }
 
 export default function FootnoteWebPage() {
-  const { talks, loading } = useFilteredTalks();
+  const { talks, loading } = useFilteredFullTalks();
   const [computing, setComputing] = useState(false);
   const [selectedSpeaker, setSelectedSpeaker] = useState('');
   const [graph, setGraph] = useState<ReturnType<typeof buildCitationGraph> | null>(null);
@@ -129,9 +129,9 @@ export default function FootnoteWebPage() {
         <TopAppBar title="The Influence Web" subtitle="Who references whom — the citation network of conference" />
         <div className="px-4 md:px-8 lg:px-12 pb-12 md:pb-24 max-w-7xl">
 
-          <Card className="mb-6 border-violet-200 bg-violet-50/50">
-            <CardContent className="pt-6">
-              <p className="text-lg font-medium text-violet-900">
+          <Card className="mb-4 md:mb-6 border-violet-200 bg-violet-50/50 overflow-hidden">
+            <CardContent className="pt-4 md:pt-6">
+              <p className="text-sm md:text-lg font-medium text-violet-900">
                 When speakers quote &quot;President Oaks&quot; or &quot;Elder Holland,&quot; they reveal an intellectual lineage.
                 This page maps who references whom across {talks.length.toLocaleString()} conference talks.
               </p>

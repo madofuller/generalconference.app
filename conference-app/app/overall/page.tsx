@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Navigation, TopAppBar } from '@/components/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useFilteredTalks } from '@/lib/filter-context';
@@ -9,12 +9,42 @@ import { ERAS } from '@/lib/types';
 import { countScriptureReferences } from '@/lib/search-utils';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import Link from 'next/link';
+import { DataCitation } from '@/components/data-citation';
+
+interface HistoricalCount {
+  decade: string;
+  talks: number;
+  words: number;
+  avgWordsPerTalk: number;
+}
 
 const COLORS = ['#1B5E7B', '#8455ef', '#40c2fd', '#f5a623', '#00668a'];
 
 export default function OverallPage() {
   const { talks, loading } = useFilteredTalks();
   const [selectedEra, setSelectedEra] = useState<string>('all');
+  const [historicalCounts, setHistoricalCounts] = useState<HistoricalCount[]>([]);
+
+  useEffect(() => {
+    fetch('/general_counts.txt')
+      .then(r => r.text())
+      .then(text => {
+        const lines = text.trim().split('\n').slice(1); // skip header
+        const parsed: HistoricalCount[] = lines.map(line => {
+          const [decade, talks, words] = line.split('\t');
+          const t = parseInt(talks, 10);
+          const w = parseInt(words, 10);
+          return {
+            decade,
+            talks: t,
+            words: w,
+            avgWordsPerTalk: t > 0 ? Math.round(w / t) : 0,
+          };
+        }).filter(r => r.talks > 0);
+        setHistoricalCounts(parsed);
+      })
+      .catch(() => {});
+  }, []);
 
   const filteredTalks = useMemo(() => {
     if (selectedEra === 'all') {
@@ -23,69 +53,67 @@ export default function OverallPage() {
     return getTalksByEra(talks, selectedEra);
   }, [selectedEra, talks]);
 
-  // Calculate overall statistics
-  const totalTalks = filteredTalks.length;
-  const uniqueSpeakers = new Set(filteredTalks.map(t => t.speaker)).size;
-  const totalConferences = new Set(filteredTalks.map(t => `${t.season} ${t.year}`)).size;
-  const totalScriptureRefs = filteredTalks.reduce((sum, talk) => sum + countScriptureReferences(talk), 0);
-  const avgRefsPerTalk = totalTalks > 0 ? (totalScriptureRefs / totalTalks).toFixed(1) : '0';
+  const stats = useMemo(() => {
+    const totalTalks = filteredTalks.length;
+    const uniqueSpeakers = new Set(filteredTalks.map(t => t.speaker)).size;
+    const totalConferences = new Set(filteredTalks.map(t => `${t.season} ${t.year}`)).size;
+    const totalScriptureRefs = filteredTalks.reduce((sum, talk) => sum + countScriptureReferences(talk), 0);
+    const avgRefsPerTalk = totalTalks > 0 ? (totalScriptureRefs / totalTalks).toFixed(1) : '0';
 
-  // Year range
-  const years = filteredTalks.map(t => t.year);
-  const minYear = years.length > 0 ? Math.min(...years) : 0;
-  const maxYear = years.length > 0 ? Math.max(...years) : 0;
+    const years = filteredTalks.map(t => t.year);
+    const minYear = years.length > 0 ? Math.min(...years) : 0;
+    const maxYear = years.length > 0 ? Math.max(...years) : 0;
 
-  // Top speakers by talk count
-  const speakerCounts = new Map<string, number>();
-  filteredTalks.forEach(talk => {
-    speakerCounts.set(talk.speaker, (speakerCounts.get(talk.speaker) || 0) + 1);
-  });
-  const topSpeakers = Array.from(speakerCounts.entries())
-    .map(([speaker, count]) => ({ speaker, count }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 20);
+    const speakerCounts = new Map<string, number>();
+    filteredTalks.forEach(talk => {
+      speakerCounts.set(talk.speaker, (speakerCounts.get(talk.speaker) || 0) + 1);
+    });
+    const topSpeakers = Array.from(speakerCounts.entries())
+      .map(([speaker, count]) => ({ speaker, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 20);
 
-  // Talks by year
-  const yearCounts = new Map<number, number>();
-  filteredTalks.forEach(talk => {
-    yearCounts.set(talk.year, (yearCounts.get(talk.year) || 0) + 1);
-  });
-  const talksByYear = Array.from(yearCounts.entries())
-    .map(([year, count]) => ({ year, count }))
-    .sort((a, b) => a.year - b.year);
+    const yearCounts = new Map<number, number>();
+    filteredTalks.forEach(talk => {
+      yearCounts.set(talk.year, (yearCounts.get(talk.year) || 0) + 1);
+    });
+    const talksByYear = Array.from(yearCounts.entries())
+      .map(([year, count]) => ({ year, count }))
+      .sort((a, b) => a.year - b.year);
 
-  // Talks by era
-  const eraCounts = new Map<string, number>();
-  filteredTalks.forEach(talk => {
-    const era = ERAS.find(e => talk.year >= e.start && (e.end === null || talk.year <= e.end));
-    if (era) {
-      eraCounts.set(era.name, (eraCounts.get(era.name) || 0) + 1);
-    }
-  });
-  const talksByEra = Array.from(eraCounts.entries())
-    .map(([era, count]) => ({ era, count }));
+    const eraCounts = new Map<string, number>();
+    filteredTalks.forEach(talk => {
+      const era = ERAS.find(e => talk.year >= e.start && (e.end === null || talk.year <= e.end));
+      if (era) {
+        eraCounts.set(era.name, (eraCounts.get(era.name) || 0) + 1);
+      }
+    });
+    const talksByEra = Array.from(eraCounts.entries())
+      .map(([era, count]) => ({ era, count }));
 
-  // Volume breakdown (simplified)
-  const volumeData = [
-    { name: 'Book of Mormon', value: Math.round(totalScriptureRefs * 0.3) },
-    { name: 'Doctrine and Covenants', value: Math.round(totalScriptureRefs * 0.2) },
-    { name: 'New Testament', value: Math.round(totalScriptureRefs * 0.25) },
-    { name: 'Old Testament', value: Math.round(totalScriptureRefs * 0.15) },
-    { name: 'Pearl of Great Price', value: Math.round(totalScriptureRefs * 0.1) },
-  ];
+    const volumeData = [
+      { name: 'Book of Mormon', value: Math.round(totalScriptureRefs * 0.3) },
+      { name: 'Doctrine and Covenants', value: Math.round(totalScriptureRefs * 0.2) },
+      { name: 'New Testament', value: Math.round(totalScriptureRefs * 0.25) },
+      { name: 'Old Testament', value: Math.round(totalScriptureRefs * 0.15) },
+      { name: 'Pearl of Great Price', value: Math.round(totalScriptureRefs * 0.1) },
+    ];
 
-  // Talks by decade for timeline
-  const decadeMap = new Map<number, number>();
-  filteredTalks.forEach(talk => {
-    const decade = Math.floor(talk.year / 10) * 10;
-    decadeMap.set(decade, (decadeMap.get(decade) || 0) + 1);
-  });
-  const decades = Array.from(decadeMap.entries())
-    .map(([decade, count]) => ({ decade, count }))
-    .sort((a, b) => a.decade - b.decade);
+    const decadeMap = new Map<number, number>();
+    filteredTalks.forEach(talk => {
+      const decade = Math.floor(talk.year / 10) * 10;
+      decadeMap.set(decade, (decadeMap.get(decade) || 0) + 1);
+    });
+    const decades = Array.from(decadeMap.entries())
+      .map(([decade, count]) => ({ decade, count }))
+      .sort((a, b) => a.decade - b.decade);
 
-  // Donut chart data for topics (using era data as proxy)
-  const donutTotal = talksByEra.reduce((s, e) => s + e.count, 0);
+    const donutTotal = talksByEra.reduce((s, e) => s + e.count, 0);
+
+    return { totalTalks, uniqueSpeakers, totalConferences, totalScriptureRefs, avgRefsPerTalk, minYear, maxYear, topSpeakers, talksByYear, talksByEra, volumeData, decades, donutTotal };
+  }, [filteredTalks]);
+
+  const { totalTalks, uniqueSpeakers, totalConferences, totalScriptureRefs, avgRefsPerTalk, minYear, maxYear, topSpeakers, talksByYear, talksByEra, volumeData, decades, donutTotal } = stats;
 
   if (loading) {
     return (
@@ -404,19 +432,88 @@ export default function OverallPage() {
             </div>
           </div>
 
+          {/* Historical Conference Counts (from general_counts.txt) */}
+          {historicalCounts.length > 0 && (
+            <div className="bg-white rounded-xl shadow-[0px_12px_32px_rgba(27,94,123,0.08)] p-4 md:p-6 lg:p-8">
+              <div className="flex items-center gap-3 mb-2">
+                <span className="material-symbols-outlined text-[#1B5E7B] text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>library_books</span>
+                <h2 className="text-xl font-bold text-[#1c1c13]">Conference Through the Ages</h2>
+              </div>
+              <p className="text-xs text-[#1c1c13]/50 mb-6">Total talks and words spoken each decade, from 1850s to present</p>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                {/* Talks per decade */}
+                <div>
+                  <h3 className="text-sm font-bold text-[#1c1c13] mb-3">Talks Per Decade</h3>
+                  <div className="h-[280px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={historicalCounts}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" />
+                        <XAxis dataKey="decade" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={50} />
+                        <YAxis tick={{ fontSize: 11 }} />
+                        <Tooltip
+                          contentStyle={{ background: 'white', border: 'none', borderRadius: '12px', boxShadow: '0px 8px 24px rgba(27,94,123,0.12)', fontSize: '13px' }}
+                          formatter={(value: any) => [Number(value).toLocaleString(), 'Talks']}
+                        />
+                        <Bar dataKey="talks" fill="#1B5E7B" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Avg words per talk */}
+                <div>
+                  <h3 className="text-sm font-bold text-[#1c1c13] mb-3">Average Words Per Talk</h3>
+                  <div className="h-[280px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={historicalCounts}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" />
+                        <XAxis dataKey="decade" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={50} />
+                        <YAxis tick={{ fontSize: 11 }} />
+                        <Tooltip
+                          contentStyle={{ background: 'white', border: 'none', borderRadius: '12px', boxShadow: '0px 8px 24px rgba(27,94,123,0.12)', fontSize: '13px' }}
+                          formatter={(value: any) => [Number(value).toLocaleString(), 'Words/Talk']}
+                        />
+                        <Bar dataKey="avgWordsPerTalk" fill="#8455ef" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </div>
+
+              {/* Summary row */}
+              <div className="grid grid-cols-3 gap-4">
+                <div className="bg-[#fdf9e9] p-4 rounded-lg text-center">
+                  <p className="text-xl font-extrabold text-[#1c1c13]">{historicalCounts.reduce((s, r) => s + r.talks, 0).toLocaleString()}</p>
+                  <p className="text-[10px] uppercase tracking-wider text-[#1c1c13]/40 font-bold mt-1">Total Talks (All Time)</p>
+                </div>
+                <div className="bg-[#fdf9e9] p-4 rounded-lg text-center">
+                  <p className="text-xl font-extrabold text-[#1c1c13]">{(historicalCounts.reduce((s, r) => s + r.words, 0) / 1000000).toFixed(1)}M</p>
+                  <p className="text-[10px] uppercase tracking-wider text-[#1c1c13]/40 font-bold mt-1">Total Words Spoken</p>
+                </div>
+                <div className="bg-[#fdf9e9] p-4 rounded-lg text-center">
+                  <p className="text-xl font-extrabold text-[#1c1c13]">{historicalCounts.length}</p>
+                  <p className="text-[10px] uppercase tracking-wider text-[#1c1c13]/40 font-bold mt-1">Decades of Data</p>
+                </div>
+              </div>
+
+              <DataCitation datasets="Historical conference talk and word counts" />
+            </div>
+          )}
+
           {/* CTA Footer */}
           <div className="bg-white rounded-xl shadow-[0px_12px_32px_rgba(27,94,123,0.08)] p-5 md:p-8 lg:p-10 flex flex-col md:flex-row items-center justify-between gap-4">
             <div>
               <h3 className="text-2xl font-bold text-[#1c1c13] mb-2">Ready to explore further?</h3>
-              <p className="text-[#524534]">Use AI-powered search or export your own insights report.</p>
+              <p className="text-[#524534]">Dive deeper into topics, speakers, and trends.</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
               <Link
-                href="/ask"
+                href="/search"
                 className="bg-[#1B5E7B] text-white px-6 sm:px-8 py-4 rounded-full font-bold text-sm shadow-[0px_8px_24px_rgba(27,94,123,0.2)] hover:shadow-[0px_12px_32px_rgba(245,166,35,0.4)] transition-all active:scale-95 flex items-center justify-center gap-2"
               >
-                <span className="material-symbols-outlined text-lg">auto_awesome</span>
-                Start New AI Search
+                <span className="material-symbols-outlined text-lg">search</span>
+                Search Talks
               </Link>
               <button
                 onClick={() => window.print()}

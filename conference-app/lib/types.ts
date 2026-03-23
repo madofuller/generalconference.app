@@ -42,6 +42,8 @@ export interface Era {
   start: number;
   end: number | null;
   president: string;
+  startSeason?: 'April' | 'October';
+  endSeason?: 'April' | 'October';
 }
 
 export interface ScriptureReference {
@@ -78,8 +80,8 @@ export const SCRIPTURE_VOLUMES = [
 ] as const;
 
 export const ERAS: Era[] = [
-  { name: 'Oaks', start: 2026, end: null, president: 'Dallin H. Oaks' },
-  { name: 'Nelson', start: 2018, end: 2025, president: 'Russell M. Nelson' },
+  { name: 'Oaks', start: 2025, end: null, president: 'Dallin H. Oaks', startSeason: 'October' },
+  { name: 'Nelson', start: 2018, end: 2025, president: 'Russell M. Nelson', endSeason: 'April' },
   { name: 'Monson', start: 2008, end: 2017, president: 'Thomas S. Monson' },
   { name: 'Hinckley', start: 1995, end: 2007, president: 'Gordon B. Hinckley' },
   { name: 'Hunter', start: 1994, end: 1994, president: 'Howard W. Hunter' },
@@ -113,7 +115,6 @@ export const LIVING_APOSTLES = [
   'Dallin H. Oaks',
   'Henry B. Eyring',
   'D. Todd Christofferson',
-  'Jeffrey R. Holland',
   'Dieter F. Uchtdorf',
   'David A. Bednar',
   'Quentin L. Cook',
@@ -124,6 +125,7 @@ export const LIVING_APOSTLES = [
   'Gerrit W. Gong',
   'Ulisses Soares',
   'Patrick Kearon',
+  'Clark G. Gilbert',
   'Gérald Caussé',
 ];
 
@@ -143,10 +145,9 @@ export const LIVING_GENERAL_AUTHORITIES = [
   'Arnulfo Valenzuela', 'Edward Dube', 'Chi Hong (Sam) Wong',
   'Weatherford T. Clayton', 'Taylor G. Godoy', 'David L. Buckner',
   'Mark A. Bragg', 'Vern P. Stanfill', 'S. Mark Palmer',
-  'Ahmad S. Corbitt', 'Clark G. Gilbert', 'Kevin S. Hamilton',
+  'Ahmad S. Corbitt', 'Kevin S. Hamilton',
   'Kyle S. McKay', 'Jack N. Gerard', 'Brook P. Hales',
   'David P. Homer', 'Matthew L. Carpenter',
-  'Russell M. Nelson',
 ];
 
 // Combined set for quick lookup

@@ -36,9 +36,9 @@ export default function SpeakersPage() {
         <TopAppBar title="Voices of Conference" subtitle="Speaker statistics and patterns" />
         <div className="px-4 md:px-8 lg:px-12 pb-12 md:pb-24 max-w-7xl">
 
-          <Card className="mb-4 md:mb-8 border-blue-200 bg-blue-50/50">
-            <CardContent className="pt-6">
-              <p className="text-xl font-medium text-blue-900">{data.headline}</p>
+          <Card className="mb-4 md:mb-8 border-blue-200 bg-blue-50/50 overflow-hidden">
+            <CardContent className="pt-4 md:pt-6">
+              <p className="text-sm md:text-xl font-medium text-blue-900">{data.headline}</p>
             </CardContent>
           </Card>
 

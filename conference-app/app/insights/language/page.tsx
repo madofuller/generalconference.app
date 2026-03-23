@@ -38,9 +38,9 @@ export default function LanguagePage() {
         <TopAppBar title="Language of Conference" subtitle="How the words of conference have evolved" />
         <div className="px-4 md:px-8 lg:px-12 pb-12 md:pb-24 max-w-7xl">
 
-          <Card className="mb-4 md:mb-8 border-violet-200 bg-violet-50/50">
-            <CardContent className="pt-6">
-              <p className="text-xl font-medium text-violet-900">{data.headline}</p>
+          <Card className="mb-4 md:mb-8 border-violet-200 bg-violet-50/50 overflow-hidden">
+            <CardContent className="pt-4 md:pt-6">
+              <p className="text-sm md:text-xl font-medium text-violet-900">{data.headline}</p>
             </CardContent>
           </Card>
 

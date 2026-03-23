@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { Navigation, TopAppBar } from '@/components/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useFilteredTalks } from '@/lib/filter-context';
+import { useFilteredFullTalks } from '@/lib/filter-context';
 import { Talk, LIVING_APOSTLES, LIVING_SPEAKERS, PRESIDENTS_OF_THE_CHURCH } from '@/lib/types';
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
@@ -158,7 +158,7 @@ function computePeriodDNA(speakerTalks: Talk[], period: 'all' | 'early' | 'late'
 type SortMode = 'talks' | 'living' | 'apostles' | 'prophets' | 'unique' | 'recent';
 
 export default function TalkDNAPage() {
-  const { talks, loading } = useFilteredTalks();
+  const { talks, loading } = useFilteredFullTalks();
   const [view, setView] = useState<'gallery' | 'detail' | 'compare' | 'ranking' | 'evolution'>('gallery');
   const [selected, setSelected] = useState('');
   const [compare, setCompare] = useState('');
@@ -223,9 +223,9 @@ export default function TalkDNAPage() {
         <TopAppBar title="Talk DNA Fingerprints" subtitle="The unique signature of every speaker" />
         <div className="px-4 md:px-8 lg:px-12 pb-12 md:pb-24 max-w-7xl">
 
-          <Card className="mb-6 border-violet-200 bg-violet-50/50">
-            <CardContent className="pt-6">
-              <p className="text-lg font-medium text-violet-900">
+          <Card className="mb-4 md:mb-6 border-violet-200 bg-violet-50/50 overflow-hidden">
+            <CardContent className="pt-4 md:pt-6">
+              <p className="text-sm md:text-lg font-medium text-violet-900">
                 Every speaker has a unique &quot;fingerprint&quot; across 8 dimensions. Browse the gallery, compare speakers, and see how fingerprints evolve over a career.
               </p>
             </CardContent>

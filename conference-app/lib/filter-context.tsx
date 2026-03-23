@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import { SearchFilters, LIVING_SPEAKERS, Talk, DataEra } from './types';
-import { loadTalks } from './data-loader';
+import { loadTalks, loadFullTalks } from './data-loader';
 
 interface FilterContextType {
   filters: SearchFilters;
@@ -76,6 +76,24 @@ export function useFilteredTalks() {
 
   useEffect(() => {
     loadTalks().then(data => {
+      setAllTalks(data);
+      setLoading(false);
+    });
+  }, []);
+
+  const talks = useMemo(() => filterTalks(allTalks), [filterTalks, allTalks]);
+
+  return { talks, allTalks, loading };
+}
+
+/** Like useFilteredTalks but loads full talk text. Use only for games/features that need the body. */
+export function useFilteredFullTalks() {
+  const [allTalks, setAllTalks] = useState<Talk[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { filterTalks } = useFilters();
+
+  useEffect(() => {
+    loadFullTalks().then(data => {
       setAllTalks(data);
       setLoading(false);
     });

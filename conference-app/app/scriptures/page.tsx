@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { useFilters, useFilteredTalks } from '@/lib/filter-context';
+import { useFilters, useFilteredFullTalks } from '@/lib/filter-context';
 import { Talk } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -307,7 +307,7 @@ function HighlightedSnippet({ text, searchPattern, book }: { text: string; searc
 
 export default function ScripturesPage() {
   const { filters } = useFilters();
-  const { talks, loading } = useFilteredTalks();
+  const { talks, loading } = useFilteredFullTalks();
   const [searching, setSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<TalkWithSnippets[]>([]);
   const [expandedTalks, setExpandedTalks] = useState<Set<number>>(new Set());

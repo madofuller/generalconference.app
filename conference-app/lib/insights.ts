@@ -107,6 +107,43 @@ export interface VocabularyData {
   speakers: VocabSpeaker[];
 }
 
+export interface SpeakerStyle {
+  avgSentenceLength: number;
+  questionRate: number;
+  scriptureRate: number;
+  iWeRatio: number;
+  storyRate: number;
+  youRate: number;
+  christRate: number;
+  exclamationRate: number;
+}
+
+export interface SignaturePhrase {
+  phrase: string;
+  count: number;
+  ratio: number;
+}
+
+export interface SpeakerFingerprint {
+  speaker: string;
+  talks: number;
+  totalWords: number;
+  distinctivenessScore: number;
+  signaturePhrases: SignaturePhrase[];
+  style: SpeakerStyle;
+  topicProfile: Record<string, number>;
+  topTopic: string;
+  topTopicRatio: number;
+}
+
+export interface SpeakerFingerprintData {
+  title: string;
+  subtitle: string;
+  globalStyle: SpeakerStyle;
+  globalTopicProfile: Record<string, number>;
+  speakers: SpeakerFingerprint[];
+}
+
 export interface OverviewData {
   totalTalks: number;
   uniqueSpeakers: number;
@@ -199,6 +236,27 @@ export interface ServiceTimelinesData {
   speakers: { speaker: string; firstYear: number; lastYear: number; span: number; talks: number; conferences: number }[];
 }
 
+export interface SilencePhraseAnalysis {
+  phrase: string;
+  decades: { decade: string; count: number }[];
+  years: { year: number; count: number }[];
+  peakDecade: string;
+  peakCount: number;
+  lastYear: number;
+  firstYear: number;
+  totalMentions: number;
+  recentCount: number;
+  status: 'vanished' | 'risen' | 'active';
+  changeRatio: number;
+}
+
+export interface SilenceData {
+  title: string;
+  subtitle: string;
+  allDecades: string[];
+  phrases: SilencePhraseAnalysis[];
+}
+
 export interface Insights {
   christTracker: ChristTrackerData;
   languageEvolution: LanguageEvolutionData;
@@ -209,9 +267,11 @@ export interface Insights {
   newVoices: NewVoicesData;
   prophetEras: ProphetErasData;
   vocabulary: VocabularyData;
+  speakerFingerprints?: SpeakerFingerprintData;
   overview: OverviewData;
   apostleProfiles?: ApostleProfile[];
   seventyProfiles?: SeventyProfile[];
+  womenProfiles?: WomenProfile[];
   roster?: RosterEntry[];
   aprilVsOctober?: AprilVsOctoberData;
   talkOpenings?: TalkOpeningsData;
@@ -220,7 +280,30 @@ export interface Insights {
   speakerSimilarity?: SpeakerSimilarityData;
   conferenceHistory?: ConferenceHistoryData;
   serviceTimelines?: ServiceTimelinesData;
+  silence?: SilenceData;
   careerProgressions?: CareerProgressionsData;
+  influenceWeb?: InfluenceWebData;
+}
+
+export interface InfluenceWebEdge {
+  source: string;
+  target: string;
+  count: number;
+}
+
+export interface InfluenceWebStat {
+  speaker: string;
+  citedByCount: number;
+  citesCount: number;
+  totalIncoming: number;
+  totalOutgoing: number;
+}
+
+export interface InfluenceWebData {
+  edges: InfluenceWebEdge[];
+  stats: InfluenceWebStat[];
+  speakers: string[];
+  totalTalksScanned: number;
 }
 
 export interface SeventyProfile {
@@ -239,6 +322,25 @@ export interface SeventyProfile {
   topScriptures?: { ref: string; count: number }[];
   christByYear?: { year: number; season: string; mentions: number }[];
   lengthTrend?: { period: string; avgWords: number }[];
+  talks?: { title: string; year: number; season: string; wordCount: number; calling: string; url: string }[];
+  yearsActive?: number[];
+}
+
+export interface WomenProfile {
+  name: string;
+  womenCalling: string;
+  latestCalling: string;
+  slug: string;
+  totalTalks: number;
+  firstTalk?: number;
+  lastTalk?: number;
+  totalConferences?: number;
+  avgWordsPerTalk?: number;
+  avgChristMentions?: number;
+  topWords?: string[];
+  signaturePhrases?: { phrase: string; count: number; ratio: number }[];
+  topScriptures?: { ref: string; count: number }[];
+  christByYear?: { year: number; season: string; mentions: number }[];
   talks?: { title: string; year: number; season: string; wordCount: number; calling: string; url: string }[];
   yearsActive?: number[];
 }

@@ -115,6 +115,15 @@
   }
 }
 
+/* Mobile: push main content below the fixed branding bar (h-20 = 5rem) */
+@media (max-width: 1023px) {
+  main {
+    padding-top: 5rem;
+    overflow-x: hidden;
+    min-width: 0;
+  }
+}
+
 /* Luminescent Sanctuary utility classes */
 .watercolor-gradient {
   background: linear-gradient(45deg, #1B5E7B, #f5a623);
@@ -163,6 +172,15 @@
   }
 }
 
+/* Hide scrollbar but keep scrollable */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* Smooth scrolling for all scrollable areas */
 .overflow-y-auto, .overflow-x-auto, .overflow-auto {
   -webkit-overflow-scrolling: touch;
@@ -181,6 +199,29 @@ html, body {
   .safe-area-top {
     padding-top: env(safe-area-inset-top);
   }
+}
+
+/* Game animations */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+
+@keyframes flipIn {
+  0% { transform: rotateX(90deg); opacity: 0; }
+  100% { transform: rotateX(0deg); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0; transform: translateY(-8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Fix Recharts SVG rendering with Tailwind v4 preflight */
+.recharts-surface,
+.recharts-surface * {
+  border: none !important;
 }
 
 /* Emotion colors */

@@ -89,6 +89,7 @@ export default function TopicsPage() {
   const [comparisonData, setComparisonData] = useState<any[]>([]);
 
   const addTopicToComparison = (topic: string) => {
+    if (!topic) return;
     if (!compareTopics.includes(topic) && compareTopics.length < 5) {
       setCompareTopics([...compareTopics, topic]);
     }
@@ -125,7 +126,7 @@ export default function TopicsPage() {
     return (
       <div className="flex min-h-screen">
         <Navigation />
-        <main className="ml-0 lg:ml-[260px] flex-1 flex items-center justify-center">
+        <main className="ml-0 min-w-0 lg:ml-[260px] flex-1 flex items-center justify-center">
           <p className="text-[#524534]">Loading...</p>
         </main>
       </div>
@@ -136,9 +137,9 @@ export default function TopicsPage() {
     return (
       <div className="flex min-h-screen">
         <Navigation />
-        <main className="ml-0 lg:ml-[260px] min-h-screen flex-1">
+        <main className="ml-0 min-w-0 lg:ml-[260px] min-h-screen flex-1">
           <TopAppBar title="Topics" subtitle="AI-classified gospel topics" />
-          <div className="px-4 md:px-8 lg:px-12 pb-12 md:pb-24">
+          <div className="mx-auto w-full min-w-0 max-w-7xl px-4 md:px-8 lg:px-12 pb-12 md:pb-24">
 
             <Card>
               <CardHeader>
@@ -162,15 +163,15 @@ export default function TopicsPage() {
   return (
     <div className="flex min-h-screen">
       <Navigation />
-      <main className="ml-0 lg:ml-[260px] min-h-screen flex-1">
+      <main className="ml-0 min-w-0 lg:ml-[260px] min-h-screen flex-1">
         <TopAppBar title="Topics" subtitle="AI-classified gospel topics" />
-        <div className="px-4 md:px-8 lg:px-12 pb-12 md:pb-24">
+        <div className="mx-auto w-full min-w-0 max-w-7xl px-4 md:px-8 lg:px-12 pb-12 md:pb-24">
 
           {/* Methodology Disclaimer */}
-          <Alert className="mb-6">
-            <Info className="h-4 w-4" />
+          <Alert className="mb-6 min-w-0">
+            <Info className="h-4 w-4 shrink-0" />
             <AlertTitle>Methodology Note</AlertTitle>
-            <AlertDescription>
+            <AlertDescription className="min-w-0 break-words text-pretty">
               Topic classifications are based on AI analysis of representative samples from each talk (title + selected sentences), 
               not the full text. This approach enables efficient processing while capturing the main themes. 
               Results provide valuable insights into topic trends, though they may not reflect every nuance of each talk.
@@ -178,19 +179,20 @@ export default function TopicsPage() {
           </Alert>
 
           {/* Filters */}
-          <Card className="mb-6">
+          <Card className="mb-6 min-w-0">
             <CardHeader>
               <CardTitle>Filters</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
+              <div className="min-w-0 space-y-2">
                 <Label>Filter by Era</Label>
                 <Select value={selectedEra} onValueChange={setSelectedEra}>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full max-w-full">
                     <SelectValue placeholder="All Eras" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Eras</SelectItem>
+                    <SelectItem value="Oaks">Oaks Era (2025-present)</SelectItem>
                     <SelectItem value="Nelson">Nelson Era (2018-2025)</SelectItem>
                     <SelectItem value="Monson">Monson Era (2008-2017)</SelectItem>
                     <SelectItem value="Hinckley">Hinckley Era (1995-2007)</SelectItem>
@@ -199,10 +201,10 @@ export default function TopicsPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
+              <div className="min-w-0 space-y-2">
                 <Label>Filter by Category</Label>
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full max-w-full">
                     <SelectValue placeholder="All Categories" />
                   </SelectTrigger>
                   <SelectContent>
@@ -217,11 +219,11 @@ export default function TopicsPage() {
           </Card>
 
           <Tabs defaultValue="overview" className="space-y-4 md:space-y-6">
-            <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="explore">Explore Topic</TabsTrigger>
-              <TabsTrigger value="compare">Compare Topics</TabsTrigger>
-              <TabsTrigger value="trends">Trends</TabsTrigger>
+            <TabsList className="flex w-full gap-0 overflow-x-auto rounded-none border-b border-[#ece8d9] bg-transparent p-0 scrollbar-hide">
+              <TabsTrigger value="overview" className="shrink-0 rounded-none border-b-2 border-transparent px-3 py-2.5 text-[10px] md:text-[11px] font-bold uppercase tracking-wider shadow-none text-[#1c1c13]/40 data-[state=active]:border-[#f5a623] data-[state=active]:text-[#1B5E7B] data-[state=active]:bg-[#f5a623]/10">Overview</TabsTrigger>
+              <TabsTrigger value="explore" className="shrink-0 rounded-none border-b-2 border-transparent px-3 py-2.5 text-[10px] md:text-[11px] font-bold uppercase tracking-wider shadow-none text-[#1c1c13]/40 data-[state=active]:border-[#f5a623] data-[state=active]:text-[#1B5E7B] data-[state=active]:bg-[#f5a623]/10">Explore Topic</TabsTrigger>
+              <TabsTrigger value="compare" className="shrink-0 rounded-none border-b-2 border-transparent px-3 py-2.5 text-[10px] md:text-[11px] font-bold uppercase tracking-wider shadow-none text-[#1c1c13]/40 data-[state=active]:border-[#f5a623] data-[state=active]:text-[#1B5E7B] data-[state=active]:bg-[#f5a623]/10">Compare Topics</TabsTrigger>
+              <TabsTrigger value="trends" className="shrink-0 rounded-none border-b-2 border-transparent px-3 py-2.5 text-[10px] md:text-[11px] font-bold uppercase tracking-wider shadow-none text-[#1c1c13]/40 data-[state=active]:border-[#f5a623] data-[state=active]:text-[#1B5E7B] data-[state=active]:bg-[#f5a623]/10">Trends</TabsTrigger>
             </TabsList>
 
             {/* Overview Tab */}
@@ -330,7 +332,7 @@ export default function TopicsPage() {
                 </CardHeader>
                 <CardContent>
                   <Select value={selectedTopic} onValueChange={setSelectedTopic}>
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full max-w-full">
                       <SelectValue placeholder="Choose a topic" />
                     </SelectTrigger>
                     <SelectContent>
@@ -480,8 +482,8 @@ export default function TopicsPage() {
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label>Add Topic to Comparison</Label>
-                    <Select onValueChange={addTopicToComparison} value="">
-                      <SelectTrigger>
+                    <Select onValueChange={addTopicToComparison}>
+                      <SelectTrigger className="w-full max-w-full">
                         <SelectValue placeholder="Choose a topic to add" />
                       </SelectTrigger>
                       <SelectContent>

@@ -133,14 +133,14 @@ function generateSearchResult(matchingTalks: Talk[], allTalks: Talk[]): SearchRe
   
   // Count all talks by era
   allTalks.forEach(talk => {
-    const era = getEraForYear(talk.year);
+    const era = getEraForYear(talk.year, talk.season);
     const current = eraCounts.get(era) || { count: 0, total: 0 };
     eraCounts.set(era, { ...current, total: current.total + 1 });
   });
-  
+
   // Count matching talks by era
   matchingTalks.forEach(talk => {
-    const era = getEraForYear(talk.year);
+    const era = getEraForYear(talk.year, talk.season);
     const current = eraCounts.get(era)!;
     eraCounts.set(era, { ...current, count: current.count + 1 });
   });

@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { Navigation, TopAppBar } from '@/components/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useFilteredTalks } from '@/lib/filter-context';
+import { useFilteredFullTalks } from '@/lib/filter-context';
 import { Talk } from '@/lib/types';
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid,
@@ -129,7 +129,7 @@ function findTransitions(talks: Talk[]): SpeakerTransition[] {
 }
 
 export default function CallingEffectPage() {
-  const { talks, loading } = useFilteredTalks();
+  const { talks, loading } = useFilteredFullTalks();
   const [selectedSpeaker, setSelectedSpeaker] = useState('');
 
   const transitionSpeakers = useMemo(() => findTransitions(talks), [talks]);
@@ -189,9 +189,9 @@ export default function CallingEffectPage() {
         <TopAppBar title="The Calling Effect" subtitle="How callings change what leaders say" />
         <div className="px-4 md:px-8 lg:px-12 pb-12 md:pb-24 max-w-7xl">
 
-          <Card className="mb-6 border-violet-200 bg-violet-50/50">
-            <CardContent className="pt-6">
-              <p className="text-lg font-medium text-violet-900">
+          <Card className="mb-4 md:mb-6 border-violet-200 bg-violet-50/50 overflow-hidden">
+            <CardContent className="pt-4 md:pt-6">
+              <p className="text-sm md:text-lg font-medium text-violet-900">
                 Does becoming an Apostle change what you talk about? Track how speakers&apos; style, tone, and habits shift when their calling changes.
               </p>
             </CardContent>

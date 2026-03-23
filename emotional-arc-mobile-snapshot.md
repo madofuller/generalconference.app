@@ -1,0 +1,489 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]:
+        - link "GeneralConference.app" [ref=e5] [cursor=pointer]:
+          - /url: /
+        - button "Close navigation menu" [ref=e6]:
+          - generic [ref=e7]: close
+      - navigation [ref=e8]:
+        - generic [ref=e9]:
+          - link "home Home" [ref=e10] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e11]: home
+            - generic [ref=e12]: Home
+          - link "dashboard The Big Picture" [ref=e13] [cursor=pointer]:
+            - /url: /overall
+            - generic [ref=e14]: dashboard
+            - generic [ref=e15]: The Big Picture
+        - generic [ref=e16]:
+          - generic [ref=e17]: Search & Study
+          - link "search Search" [ref=e18] [cursor=pointer]:
+            - /url: /search
+            - generic [ref=e19]: search
+            - generic [ref=e20]: Search
+          - link "category Topics Explorer" [ref=e21] [cursor=pointer]:
+            - /url: /topics
+            - generic [ref=e22]: category
+            - generic [ref=e23]: Topics Explorer
+          - link "mood Emotions Explorer" [ref=e24] [cursor=pointer]:
+            - /url: /emotions
+            - generic [ref=e25]: mood
+            - generic [ref=e26]: Emotions Explorer
+        - generic [ref=e27]:
+          - generic [ref=e28]: People
+          - link "groups People Directory" [ref=e29] [cursor=pointer]:
+            - /url: /people
+            - generic [ref=e30]: groups
+            - generic [ref=e31]: People Directory
+          - link "route Speaker Insights" [ref=e32] [cursor=pointer]:
+            - /url: /speakers
+            - generic [ref=e33]: route
+            - generic [ref=e34]: Speaker Insights
+        - generic [ref=e35]:
+          - generic [ref=e36]: Insights
+          - link "menu_book Scripture Insights" [ref=e37] [cursor=pointer]:
+            - /url: /scripture-insights
+            - generic [ref=e38]: menu_book
+            - generic [ref=e39]: Scripture Insights
+          - link "favorite Name of Christ" [ref=e40] [cursor=pointer]:
+            - /url: /insights/christ
+            - generic [ref=e41]: favorite
+            - generic [ref=e42]: Name of Christ
+          - link "translate Language Evolution" [ref=e43] [cursor=pointer]:
+            - /url: /insights/language
+            - generic [ref=e44]: translate
+            - generic [ref=e45]: Language Evolution
+          - link "schedule Talk Length" [ref=e46] [cursor=pointer]:
+            - /url: /insights/talk-length
+            - generic [ref=e47]: schedule
+            - generic [ref=e48]: Talk Length
+          - link "trending_up Women's Trends" [ref=e49] [cursor=pointer]:
+            - /url: /insights/women
+            - generic [ref=e50]: trending_up
+            - generic [ref=e51]: Women's Trends
+          - link "person_add New Voices" [ref=e52] [cursor=pointer]:
+            - /url: /insights/new-voices
+            - generic [ref=e53]: person_add
+            - generic [ref=e54]: New Voices
+          - link "history Prophet Eras" [ref=e55] [cursor=pointer]:
+            - /url: /insights/prophet-eras
+            - generic [ref=e56]: history
+            - generic [ref=e57]: Prophet Eras
+        - generic [ref=e58]:
+          - generic [ref=e59]: Deep Dives
+          - link "compare April vs October" [ref=e60] [cursor=pointer]:
+            - /url: /insights/april-vs-october
+            - generic [ref=e61]: compare
+            - generic [ref=e62]: April vs October
+          - link "start How Talks Begin" [ref=e63] [cursor=pointer]:
+            - /url: /insights/openings
+            - generic [ref=e64]: start
+            - generic [ref=e65]: How Talks Begin
+          - link "hub Topic Pairs" [ref=e66] [cursor=pointer]:
+            - /url: /insights/topic-pairs
+            - generic [ref=e67]: hub
+            - generic [ref=e68]: Topic Pairs
+          - link "history_edu Through History" [ref=e69] [cursor=pointer]:
+            - /url: /insights/history
+            - generic [ref=e70]: history_edu
+            - generic [ref=e71]: Through History
+          - link "trending_up Church Growth" [ref=e72] [cursor=pointer]:
+            - /url: /membership
+            - generic [ref=e73]: trending_up
+            - generic [ref=e74]: Church Growth
+          - link "temple_buddhist Temples" [ref=e75] [cursor=pointer]:
+            - /url: /temples
+            - generic [ref=e76]: temple_buddhist
+            - generic [ref=e77]: Temples
+        - generic [ref=e78]:
+          - generic [ref=e79]: Discoveries
+          - link "show_chart Emotional Arc" [ref=e80] [cursor=pointer]:
+            - /url: /insights/emotional-arc
+            - generic [ref=e81]: show_chart
+            - generic [ref=e82]: Emotional Arc
+          - link "balance Doctrinal Pendulum" [ref=e83] [cursor=pointer]:
+            - /url: /insights/doctrinal-pendulum
+            - generic [ref=e84]: balance
+            - generic [ref=e85]: Doctrinal Pendulum
+          - link "swap_horiz Lost & Found" [ref=e86] [cursor=pointer]:
+            - /url: /insights/silence
+            - generic [ref=e87]: swap_horiz
+            - generic [ref=e88]: Lost & Found
+          - link "fingerprint Talk DNA" [ref=e89] [cursor=pointer]:
+            - /url: /insights/talk-dna
+            - generic [ref=e90]: fingerprint
+            - generic [ref=e91]: Talk DNA
+          - link "swap_vert The Calling Effect" [ref=e92] [cursor=pointer]:
+            - /url: /insights/calling-effect
+            - generic [ref=e93]: swap_vert
+            - generic [ref=e94]: The Calling Effect
+          - link "swap_horiz Thematic Shifts" [ref=e95] [cursor=pointer]:
+            - /url: /insights/repetition
+            - generic [ref=e96]: swap_horiz
+            - generic [ref=e97]: Thematic Shifts
+        - generic [ref=e98]:
+          - generic [ref=e99]: Games & Fun
+          - link "grid_on Conference Wordle" [ref=e100] [cursor=pointer]:
+            - /url: /games/wordle
+            - generic [ref=e101]: grid_on
+            - generic [ref=e102]: Conference Wordle
+          - link "apps Connections" [ref=e103] [cursor=pointer]:
+            - /url: /games/connections
+            - generic [ref=e104]: apps
+            - generic [ref=e105]: Connections
+          - link "history_edu Decade Detective" [ref=e106] [cursor=pointer]:
+            - /url: /games/decade-detective
+            - generic [ref=e107]: history_edu
+            - generic [ref=e108]: Decade Detective
+          - link "psychology Real or Fake?" [ref=e109] [cursor=pointer]:
+            - /url: /games/title-or-not
+            - generic [ref=e110]: psychology
+            - generic [ref=e111]: Real or Fake?
+          - link "edit_note Finish the Quote" [ref=e112] [cursor=pointer]:
+            - /url: /games/finish-quote
+            - generic [ref=e113]: edit_note
+            - generic [ref=e114]: Finish the Quote
+          - link "quiz Trivia" [ref=e115] [cursor=pointer]:
+            - /url: /games/trivia
+            - generic [ref=e116]: quiz
+            - generic [ref=e117]: Trivia
+          - link "grid_view Bingo" [ref=e118] [cursor=pointer]:
+            - /url: /games/bingo
+            - generic [ref=e119]: grid_view
+            - generic [ref=e120]: Bingo
+      - paragraph [ref=e122]:
+        - text: Built by
+        - link "madofuller" [ref=e123] [cursor=pointer]:
+          - /url: https://github.com/madofuller
+        - text: · Talk data by
+        - link "lukejoneslj" [ref=e124] [cursor=pointer]:
+          - /url: https://github.com/lukejoneslj/GeneralConferenceScraper
+        - text: · Historical data by
+        - link "qhspencer" [ref=e125] [cursor=pointer]:
+          - /url: https://github.com/qhspencer/lds-data-analysis
+    - generic [ref=e126]:
+      - button "Open navigation menu" [ref=e127]:
+        - generic [ref=e128]: menu
+      - link "GeneralConference.app" [ref=e129] [cursor=pointer]:
+        - /url: /
+    - main [ref=e130]:
+      - heading "Emotional Arc" [level=1] [ref=e147]
+      - generic [ref=e148]:
+        - paragraph [ref=e150]: Every conference weekend has an emotional shape. Does it start somber and build to hope? Where are the emotional peaks?
+        - generic [ref=e152]:
+          - combobox [ref=e153]:
+            - option "October 2025" [selected]
+            - option "April 2025"
+            - option "October 2024"
+            - option "April 2024"
+            - option "October 2023"
+            - option "April 2023"
+            - option "October 2022"
+            - option "April 2022"
+            - option "October 2021"
+            - option "April 2021"
+            - option "October 2020"
+            - option "April 2020"
+            - option "October 2019"
+            - option "April 2019"
+            - option "October 2018"
+            - option "April 2018"
+            - option "October 2017"
+            - option "April 2017"
+            - option "October 2016"
+            - option "April 2016"
+            - option "October 2015"
+            - option "April 2015"
+            - option "October 2014"
+            - option "April 2014"
+            - option "October 2013"
+            - option "April 2013"
+            - option "October 2012"
+            - option "April 2012"
+            - option "October 2011"
+            - option "April 2011"
+            - option "October 2010"
+            - option "April 2010"
+            - option "October 2009"
+            - option "April 2009"
+            - option "October 2008"
+            - option "April 2008"
+            - option "October 2007"
+            - option "April 2007"
+            - option "October 2006"
+            - option "April 2006"
+            - option "October 2005"
+            - option "April 2005"
+            - option "October 2004"
+            - option "April 2004"
+            - option "October 2003"
+            - option "April 2003"
+            - option "October 2002"
+            - option "April 2002"
+            - option "October 2001"
+            - option "April 2001"
+            - option "October 2000"
+            - option "April 2000"
+            - option "October 1999"
+            - option "April 1999"
+            - option "October 1998"
+            - option "April 1998"
+            - option "October 1997"
+            - option "April 1997"
+            - option "October 1996"
+            - option "April 1996"
+            - option "October 1995"
+            - option "April 1995"
+            - option "October 1994"
+            - option "April 1994"
+            - option "October 1993"
+            - option "April 1993"
+            - option "October 1992"
+            - option "April 1992"
+            - option "October 1991"
+            - option "April 1991"
+            - option "October 1990"
+            - option "April 1990"
+            - option "October 1989"
+            - option "April 1989"
+            - option "October 1988"
+            - option "April 1988"
+            - option "October 1987"
+            - option "April 1987"
+            - option "October 1986"
+            - option "April 1986"
+            - option "October 1985"
+            - option "April 1985"
+            - option "October 1984"
+            - option "April 1984"
+            - option "October 1983"
+            - option "April 1983"
+            - option "October 1982"
+            - option "April 1982"
+            - option "October 1981"
+            - option "April 1981"
+            - option "October 1980"
+            - option "April 1980"
+            - option "October 1979"
+            - option "April 1979"
+            - option "October 1978"
+            - option "April 1978"
+            - option "October 1977"
+            - option "April 1977"
+            - option "October 1976"
+            - option "April 1976"
+            - option "October 1975"
+            - option "April 1975"
+            - option "October 1974"
+            - option "April 1974"
+            - option "October 1973"
+            - option "April 1973"
+            - option "October 1972"
+            - option "April 1972"
+            - option "October 1971"
+            - option "April 1971"
+          - generic [ref=e154]:
+            - button "Prophets & Apostles" [ref=e155]
+            - button "All Speakers" [ref=e156]
+          - button "Compare Two" [ref=e157]
+        - generic [ref=e158]:
+          - generic [ref=e159]:
+            - heading "Leadership at October 2025" [level=3] [ref=e160]
+            - generic [ref=e161]:
+              - paragraph [ref=e162]: First Presidency
+              - generic [ref=e164]: Russell M. Nelson
+            - generic [ref=e165]:
+              - paragraph [ref=e166]: Quorum of the Twelve
+              - generic [ref=e167]:
+                - generic [ref=e168]: Dallin H. Oaks
+                - generic [ref=e170]: Jeffrey R. Holland
+                - generic [ref=e172]: Henry B. Eyring
+                - generic [ref=e174]: Dieter F. Uchtdorf
+                - generic [ref=e176]: David A. Bednar
+                - generic [ref=e178]: Quentin L. Cook
+                - generic [ref=e180]: D. Todd Christofferson
+                - generic [ref=e182]: Neil L. Andersen
+                - generic [ref=e184]: Dale G. Renlund
+                - generic [ref=e186]: Gary E. Stevenson
+                - generic [ref=e188]: Ronald A. Rasband
+                - generic [ref=e190]: Gerrit W. Gong
+                - generic [ref=e192]: Ulisses Soares
+                - generic [ref=e194]: Patrick Kearon
+            - paragraph [ref=e196]: Highlighted = gave a talk · Ordered by seniority
+          - generic [ref=e197]:
+            - generic [ref=e198]:
+              - generic [ref=e199]:
+                - paragraph [ref=e200]: "15"
+                - paragraph [ref=e201]: Talks
+              - generic [ref=e202]:
+                - paragraph [ref=e203]: Love
+                - paragraph [ref=e204]: Dominant Tone
+              - generic [ref=e205]:
+                - paragraph [ref=e206]: Neil L. Andersen
+                - paragraph [ref=e207]: Most Emotional
+              - generic [ref=e208]:
+                - paragraph [ref=e209]: October 2025
+                - paragraph [ref=e210]: Conference
+            - generic [ref=e211]:
+              - heading "Emotional Flow (by seniority)" [level=3] [ref=e212]
+              - paragraph [ref=e213]: Each bar represents one talk. Speakers who gave multiple talks appear more than once, labeled (2), (3), etc.
+              - application [ref=e217]:
+                - generic [ref=e262]:
+                  - generic [ref=e263]:
+                    - generic [ref=e265]: Oaks
+                    - generic [ref=e705]: Oaks (2)
+                    - generic [ref=e707]: Holland
+                    - generic [ref=e709]: Eyring
+                    - generic [ref=e711]: Uchtdorf
+                    - generic [ref=e713]: Bednar
+                    - generic [ref=e715]: Cook
+                    - generic [ref=e717]: Christofferson
+                    - generic [ref=e719]: Andersen
+                    - generic [ref=e721]: Renlund
+                    - generic [ref=e723]: Stevenson
+                    - generic [ref=e725]: Rasband
+                    - generic [ref=e727]: Soares
+                    - generic [ref=e729]: Gong
+                    - generic [ref=e731]: Kearon
+                  - generic [ref=e294]:
+                    - generic [ref=e296]: "0"
+                    - generic [ref=e298]: "10"
+                    - generic [ref=e300]: "20"
+                    - generic [ref=e302]: "30"
+                    - generic [ref=e304]: "40"
+              - generic [ref=e305]:
+                - generic [ref=e308]: Joy
+                - generic [ref=e311]: Love
+                - generic [ref=e314]: Hope
+                - generic [ref=e317]: Reverence
+                - generic [ref=e320]: Gratitude
+                - generic [ref=e323]: Sorrow
+                - generic [ref=e326]: Warning
+                - generic [ref=e329]: Urgency
+            - generic [ref=e330]:
+              - heading "Individual Emotion Tracks" [level=3] [ref=e331]
+              - application [ref=e335]:
+                - generic [ref=e364]:
+                  - generic [ref=e365]:
+                    - generic [ref=e367]: Oaks
+                    - generic [ref=e741]: Oaks (2)
+                    - generic [ref=e743]: Holland
+                    - generic [ref=e745]: Eyring
+                    - generic [ref=e747]: Uchtdorf
+                    - generic [ref=e749]: Bednar
+                    - generic [ref=e751]: Cook
+                    - generic [ref=e753]: Christofferson
+                    - generic [ref=e755]: Andersen
+                    - generic [ref=e757]: Renlund
+                    - generic [ref=e759]: Stevenson
+                    - generic [ref=e761]: Rasband
+                    - generic [ref=e763]: Soares
+                    - generic [ref=e765]: Gong
+                    - generic [ref=e767]: Kearon
+                  - generic [ref=e396]:
+                    - generic [ref=e398]: "0"
+                    - generic [ref=e400]: "4"
+                    - generic [ref=e402]: "8"
+                    - generic [ref=e404]: "12"
+                    - generic [ref=e406]: "16"
+            - generic [ref=e407]:
+              - heading "Talk-by-Talk (seniority order)" [level=3] [ref=e408]
+              - generic [ref=e409]:
+                - generic [ref=e410]:
+                  - generic [ref=e411]: "1"
+                  - generic [ref=e412]:
+                    - generic [ref=e413]: Dallin H. Oaks
+                    - generic [ref=e414]: Introduction
+                  - generic [ref=e415]: Love
+                - generic [ref=e416]:
+                  - generic [ref=e417]: "2"
+                  - generic [ref=e418]:
+                    - generic [ref=e419]: Dallin H. Oaks
+                    - generic [ref=e420]: The Family-Centered Gospel of Jesus Christ
+                  - generic [ref=e421]: Love
+                - generic [ref=e422]:
+                  - generic [ref=e423]: "3"
+                  - generic [ref=e424]:
+                    - generic [ref=e425]: Jeffrey R. Holland
+                    - generic [ref=e426]: And Now I See
+                  - generic [ref=e427]: Warning
+                - generic [ref=e428]:
+                  - generic [ref=e429]: "4"
+                  - generic [ref=e430]:
+                    - generic [ref=e431]: Henry B. Eyring
+                    - generic [ref=e432]: Proved and Strengthened in Christ
+                  - generic [ref=e433]: Sorrow
+                - generic [ref=e434]:
+                  - generic [ref=e435]: "5"
+                  - generic [ref=e436]:
+                    - generic [ref=e437]: Dieter F. Uchtdorf
+                    - generic [ref=e438]: Do Your Part with All Your Heart
+                  - generic [ref=e439]: Love
+                - generic [ref=e440]:
+                  - generic [ref=e441]: "6"
+                  - generic [ref=e442]:
+                    - generic [ref=e443]: David A. Bednar
+                    - generic [ref=e444]: They Are Their Own Judges
+                  - generic [ref=e445]: Warning
+                - generic [ref=e446]:
+                  - generic [ref=e447]: "7"
+                  - generic [ref=e448]:
+                    - generic [ref=e449]: Quentin L. Cook
+                    - generic [ref=e450]: The Lord Is Hastening His Work
+                  - generic [ref=e451]: Joy
+                - generic [ref=e452]:
+                  - generic [ref=e453]: "8"
+                  - generic [ref=e454]:
+                    - generic [ref=e455]: D. Todd Christofferson
+                    - generic [ref=e456]: Look to God and Live
+                  - generic [ref=e457]: Reverence
+                - generic [ref=e458]:
+                  - generic [ref=e459]: "9"
+                  - generic [ref=e460]:
+                    - generic [ref=e461]: Neil L. Andersen
+                    - generic [ref=e462]: The Atoning Love of Jesus Christ
+                  - generic [ref=e463]: Warning
+                - generic [ref=e464]:
+                  - generic [ref=e465]: "10"
+                  - generic [ref=e466]:
+                    - generic [ref=e467]: Dale G. Renlund
+                    - generic [ref=e468]: Taking on the Name of Jesus Christ
+                  - generic [ref=e469]: Love
+                - generic [ref=e470]:
+                  - generic [ref=e471]: "11"
+                  - generic [ref=e472]:
+                    - generic [ref=e473]: Gary E. Stevenson
+                    - generic [ref=e474]: Blessed Are the Peacemakers
+                  - generic [ref=e475]: Love
+                - generic [ref=e476]:
+                  - generic [ref=e477]: "12"
+                  - generic [ref=e478]:
+                    - generic [ref=e479]: Ronald A. Rasband
+                    - generic [ref=e480]: The Family Proclamation—Words from God
+                  - generic [ref=e481]: Love
+                - generic [ref=e482]:
+                  - generic [ref=e483]: "13"
+                  - generic [ref=e484]:
+                    - generic [ref=e485]: Ulisses Soares
+                    - generic [ref=e486]: Adorned with the Virtue of Temperance
+                  - generic [ref=e487]: Reverence
+                - generic [ref=e488]:
+                  - generic [ref=e489]: "14"
+                  - generic [ref=e490]:
+                    - generic [ref=e491]: Gerrit W. Gong
+                    - generic [ref=e492]: No One Sits Alone
+                  - generic [ref=e493]: Love
+                - generic [ref=e494]:
+                  - generic [ref=e495]: "15"
+                  - generic [ref=e496]:
+                    - generic [ref=e497]: Patrick Kearon
+                    - generic [ref=e498]: Jesus Christ and Your New Beginning
+                  - generic [ref=e499]: Warning
+        - paragraph [ref=e501]:
+          - strong [ref=e502]: "Methodology:"
+          - text: Emotions are detected by counting keyword hits in each talk's text (e.g., "rejoice," "sorrow," "beware"), normalized per 1,000 words. Talks and leaders are ordered by apostolic seniority. Leadership roster is inferred from calling data in the talk records.
+  - button "Open Next.js Dev Tools" [ref=e139] [cursor=pointer]:
+    - img [ref=e140]
+  - alert [ref=e143]
+  - generic [ref=e503]: "4"

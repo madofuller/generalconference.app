@@ -104,6 +104,7 @@ export default function EmotionsPage() {
   const [comparisonData, setComparisonData] = useState<any[]>([]);
 
   const addEmotionToComparison = (emotion: string) => {
+    if (!emotion) return;
     if (!compareEmotions.includes(emotion) && compareEmotions.length < 5) {
       setCompareEmotions([...compareEmotions, emotion]);
     }
@@ -270,7 +271,7 @@ export default function EmotionsPage() {
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all duration-300 ${
+                className={`flex items-center gap-1.5 px-3 py-2 md:px-5 md:py-2.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-widest transition-all duration-300 ${
                   activeTab === tab.key
                     ? 'bg-[#1B5E7B] text-white shadow-[0px_4px_16px_rgba(27,94,123,0.25)]'
                     : 'bg-white text-[#524534] hover:bg-[#f5a623]/10 shadow-[0px_2px_8px_rgba(27,94,123,0.04)]'
@@ -292,7 +293,7 @@ export default function EmotionsPage() {
 
                   {/* Left: SVG Donut */}
                   <div className="col-span-1 md:col-span-5 bg-white rounded-xl p-4 md:p-6 lg:p-8 shadow-[0px_12px_32px_rgba(27,94,123,0.06)] flex flex-col items-center justify-center">
-                    <div className="relative w-[260px] h-[260px]">
+                    <div className="relative w-[200px] h-[200px] md:w-[260px] md:h-[260px]">
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                           <Pie
@@ -521,16 +522,16 @@ export default function EmotionsPage() {
               {/* Emotion Statistics Table */}
               <section>
                 <p className="text-xs font-bold uppercase tracking-widest text-[#524534] mb-4">Full Emotion Rankings</p>
-                <div className="bg-white rounded-xl shadow-[0px_12px_32px_rgba(27,94,123,0.06)] overflow-hidden">
-                  <table className="w-full">
+                <div className="bg-white rounded-xl shadow-[0px_12px_32px_rgba(27,94,123,0.06)] overflow-x-auto">
+                  <table className="w-full min-w-[500px]">
                     <thead>
                       <tr className="bg-[#fdf9e9]">
-                        <th className="text-left px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-[#524534]">Rank</th>
-                        <th className="text-left px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-[#524534]">Emotion</th>
-                        <th className="text-left px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-[#524534]">Category</th>
-                        <th className="text-right px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-[#524534]">Count</th>
-                        <th className="text-right px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-[#524534]">Share</th>
-                        <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-[#524534]">Distribution</th>
+                        <th className="text-left px-3 md:px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-[#524534]">Rank</th>
+                        <th className="text-left px-3 md:px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-[#524534]">Emotion</th>
+                        <th className="text-left px-3 md:px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-[#524534] hidden sm:table-cell">Category</th>
+                        <th className="text-right px-3 md:px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-[#524534]">Count</th>
+                        <th className="text-right px-3 md:px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-[#524534]">Share</th>
+                        <th className="px-3 md:px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-[#524534] hidden md:table-cell">Distribution</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -540,21 +541,21 @@ export default function EmotionsPage() {
                         return (
                           <tr key={idx} className="hover:bg-[#fdf9e9]/60 cursor-pointer transition-colors"
                               onClick={() => { setSelectedEmotion(stat.emotion); setActiveTab('explore'); }}>
-                            <td className="px-6 py-3 text-sm font-bold text-[#1B5E7B]">{idx + 1}</td>
-                            <td className="px-6 py-3">
+                            <td className="px-3 md:px-6 py-3 text-sm font-bold text-[#1B5E7B]">{idx + 1}</td>
+                            <td className="px-3 md:px-6 py-3">
                               <div className="flex items-center gap-2">
                                 <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
-                                <span className="text-sm font-semibold text-[#1c1c13] capitalize">{stat.emotion}</span>
+                                <span className="text-xs md:text-sm font-semibold text-[#1c1c13] capitalize">{stat.emotion}</span>
                               </div>
                             </td>
-                            <td className="px-6 py-3">
+                            <td className="px-3 md:px-6 py-3 hidden sm:table-cell">
                               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#fdf9e9] text-[#1B5E7B]">
                                 {getEmotionCategory(stat.emotion)}
                               </span>
                             </td>
-                            <td className="px-6 py-3 text-right text-sm text-[#1c1c13]/70">{stat.count.toLocaleString()}</td>
-                            <td className="px-6 py-3 text-right text-sm font-bold text-[#1B5E7B]">{stat.percentage.toFixed(1)}%</td>
-                            <td className="px-6 py-3 w-40">
+                            <td className="px-3 md:px-6 py-3 text-right text-xs md:text-sm text-[#1c1c13]/70">{stat.count.toLocaleString()}</td>
+                            <td className="px-3 md:px-6 py-3 text-right text-xs md:text-sm font-bold text-[#1B5E7B]">{stat.percentage.toFixed(1)}%</td>
+                            <td className="px-3 md:px-6 py-3 w-40 hidden md:table-cell">
                               <div className="h-1.5 bg-[#fdf9e9] rounded-full overflow-hidden">
                                 <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
                               </div>
@@ -611,19 +612,19 @@ export default function EmotionsPage() {
 
                   {selectedEmotionStats && (
                     <>
-                      <div className="col-span-1 md:col-span-8 grid grid-cols-2 lg:grid-cols-4 gap-4">
+                      <div className="col-span-1 md:col-span-8 grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
                         {[
                           { label: 'Total Talks', value: selectedEmotionStats.count.toLocaleString(), icon: 'article' },
                           { label: 'Percentage', value: `${selectedEmotionStats.percentage.toFixed(1)}%`, icon: 'percent' },
                           { label: 'Avg Confidence', value: `${(selectedEmotionStats.avgScore * 100).toFixed(0)}%`, icon: 'verified' },
                           { label: 'Category', value: getEmotionCategory(selectedEmotion), icon: 'category' },
                         ].map(card => (
-                          <div key={card.label} className="bg-white rounded-xl p-5 shadow-[0px_12px_32px_rgba(27,94,123,0.06)] flex flex-col justify-between">
-                            <div className="flex items-center gap-2 mb-3">
-                              <span className="material-symbols-outlined text-[#1B5E7B]" style={{ fontSize: 18 }}>{card.icon}</span>
-                              <span className="text-[10px] font-bold uppercase tracking-widest text-[#524534]/60">{card.label}</span>
+                          <div key={card.label} className="bg-white rounded-xl p-4 md:p-5 shadow-[0px_12px_32px_rgba(27,94,123,0.06)] flex flex-col justify-between">
+                            <div className="flex items-center gap-2 mb-2 md:mb-3">
+                              <span className="material-symbols-outlined text-[#1B5E7B]" style={{ fontSize: 16 }}>{card.icon}</span>
+                              <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-[#524534]/60">{card.label}</span>
                             </div>
-                            <span className="text-2xl font-bold text-[#1c1c13] capitalize">{card.value}</span>
+                            <span className="text-lg md:text-2xl font-bold text-[#1c1c13] capitalize">{card.value}</span>
                           </div>
                         ))}
                       </div>
@@ -686,14 +687,14 @@ export default function EmotionsPage() {
                         .sort((a, b) => b.year - a.year)
                         .slice(0, 10)
                         .map((talk, idx) => (
-                          <div key={idx} className="bg-white rounded-xl p-5 shadow-[0px_12px_32px_rgba(27,94,123,0.06)] hover:shadow-[0px_16px_40px_rgba(27,94,123,0.1)] transition-all duration-300">
-                            <div className="flex items-start justify-between gap-4">
-                              <div className="flex-1">
+                          <div key={idx} className="bg-white rounded-xl p-4 md:p-5 shadow-[0px_12px_32px_rgba(27,94,123,0.06)] hover:shadow-[0px_16px_40px_rgba(27,94,123,0.1)] transition-all duration-300">
+                            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                              <div className="flex-1 min-w-0">
                                 <h3 className="font-bold text-[#1c1c13] text-sm mb-1">{talk.title}</h3>
                                 <p className="text-xs text-[#524534]/60 mb-2">
                                   {talk.speaker} &middot; {talk.season} {talk.year}
                                 </p>
-                                <div className="flex gap-2 items-center">
+                                <div className="flex flex-wrap gap-2 items-center">
                                   <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#fdf9e9] text-[#1B5E7B]">
                                     {talk.calling}
                                   </span>
@@ -703,7 +704,7 @@ export default function EmotionsPage() {
                                 </div>
                               </div>
                               <a href={talk.url} target="_blank" rel="noopener noreferrer"
-                                className="px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider bg-[#fdf9e9] text-[#1B5E7B] hover:bg-[#f5a623]/20 transition-all duration-300">
+                                className="px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider bg-[#fdf9e9] text-[#1B5E7B] hover:bg-[#f5a623]/20 transition-all duration-300 shrink-0 text-center">
                                 View Talk
                               </a>
                             </div>
@@ -725,7 +726,7 @@ export default function EmotionsPage() {
                   <div className="space-y-4">
                     <div className="space-y-2">
                       <Label className="text-xs text-[#524534]/70">Add Emotion (up to 5)</Label>
-                      <Select onValueChange={addEmotionToComparison} value="">
+                      <Select onValueChange={addEmotionToComparison}>
                         <SelectTrigger className="rounded-xl border-[#f5a623]/20 focus:ring-[#f5a623]/30 max-w-sm">
                           <SelectValue placeholder="Choose an emotion to add" />
                         </SelectTrigger>
@@ -799,7 +800,7 @@ export default function EmotionsPage() {
                   <h3 className="text-lg font-bold text-[#1c1c13] mb-1">Emotion Categories Distribution</h3>
                   <p className="text-xs text-[#524534]/60 mb-6">How emotions group into broader categories</p>
                   <div className="flex items-center justify-center">
-                    <div className="relative w-[320px] h-[320px]">
+                    <div className="relative w-[250px] h-[250px] md:w-[320px] md:h-[320px]">
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                           <Pie

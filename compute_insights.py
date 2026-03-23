@@ -12,10 +12,16 @@ from collections import Counter
 df = pd.read_csv('conference-app/public/conference_talks_cleaned.csv')
 print(f"Loaded {len(df)} talks")
 
-# Fix unicode speaker name duplicates
-df['speaker'] = df['speaker'].str.replace('\xa0', ' ', regex=False)
-df['speaker'] = df['speaker'].str.replace('\u00a0', ' ', regex=False)
-df['speaker'] = df['speaker'].str.strip()
+# Fix unicode speaker name duplicates and strip prefixes
+df['speaker'] = (df['speaker']
+    .str.replace('\xa0', ' ', regex=False)
+    .str.replace('\u00a0', ' ', regex=False)
+    .str.strip()
+    .str.replace(r'^Presented\s+', '', regex=True)
+    .str.replace(r'^By\s+', '', regex=True)
+    .str.replace(r'^Bishop\s+', '', regex=True)
+    .str.strip()
+)
 df['talk_length'] = df['talk'].str.len().fillna(0).astype(int)
 
 insights = {}

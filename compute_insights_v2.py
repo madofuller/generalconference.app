@@ -17,7 +17,14 @@ with open('conference-app/public/insights.json', 'r', encoding='utf-8') as f:
     insights = json.load(f)
 
 df = pd.read_csv('conference-app/public/conference_talks_cleaned.csv')
-df['speaker'] = df['speaker'].str.replace('\xa0', ' ', regex=False).str.strip()
+df['speaker'] = (df['speaker']
+    .str.replace('\xa0', ' ', regex=False)
+    .str.strip()
+    .str.replace(r'^Presented\s+', '', regex=True)
+    .str.replace(r'^By\s+', '', regex=True)
+    .str.replace(r'^Bishop\s+', '', regex=True)
+    .str.strip()
+)
 df['talk_length'] = df['talk'].str.len().fillna(0).astype(int)
 df['word_count'] = df['talk'].str.split().str.len().fillna(0).astype(int)
 df['conf'] = df.season + ' ' + df.year.astype(str)
@@ -32,10 +39,10 @@ CURRENT_LEADERS = [
     {"name": "Henry B. Eyring", "calling": "First Counselor in the First Presidency", "group": "First Presidency", "ordained_apostle": 1995, "slug": "henry-b-eyring"},
     {"name": "Jeffrey R. Holland", "calling": "Second Counselor in the First Presidency", "group": "First Presidency", "ordained_apostle": 1994, "slug": "jeffrey-r-holland"},
     # Quorum of the Twelve
+    {"name": "D. Todd Christofferson", "calling": "Of the Quorum of the Twelve Apostles", "group": "Quorum of the Twelve", "ordained_apostle": 2008, "slug": "d-todd-christofferson"},
     {"name": "Dieter F. Uchtdorf", "calling": "President of the Quorum of the Twelve", "group": "Quorum of the Twelve", "ordained_apostle": 2004, "slug": "dieter-f-uchtdorf"},
     {"name": "David A. Bednar", "calling": "Of the Quorum of the Twelve Apostles", "group": "Quorum of the Twelve", "ordained_apostle": 2004, "slug": "david-a-bednar"},
     {"name": "Quentin L. Cook", "calling": "Of the Quorum of the Twelve Apostles", "group": "Quorum of the Twelve", "ordained_apostle": 2007, "slug": "quentin-l-cook"},
-    {"name": "D. Todd Christofferson", "calling": "Of the Quorum of the Twelve Apostles", "group": "Quorum of the Twelve", "ordained_apostle": 2008, "slug": "d-todd-christofferson"},
     {"name": "Neil L. Andersen", "calling": "Of the Quorum of the Twelve Apostles", "group": "Quorum of the Twelve", "ordained_apostle": 2009, "slug": "neil-l-andersen"},
     {"name": "Ronald A. Rasband", "calling": "Of the Quorum of the Twelve Apostles", "group": "Quorum of the Twelve", "ordained_apostle": 2015, "slug": "ronald-a-rasband"},
     {"name": "Gary E. Stevenson", "calling": "Of the Quorum of the Twelve Apostles", "group": "Quorum of the Twelve", "ordained_apostle": 2015, "slug": "gary-e-stevenson"},
@@ -43,7 +50,44 @@ CURRENT_LEADERS = [
     {"name": "Gerrit W. Gong", "calling": "Of the Quorum of the Twelve Apostles", "group": "Quorum of the Twelve", "ordained_apostle": 2018, "slug": "gerrit-w-gong"},
     {"name": "Ulisses Soares", "calling": "Of the Quorum of the Twelve Apostles", "group": "Quorum of the Twelve", "ordained_apostle": 2018, "slug": "ulisses-soares"},
     {"name": "Patrick Kearon", "calling": "Of the Quorum of the Twelve Apostles", "group": "Quorum of the Twelve", "ordained_apostle": 2024, "slug": "patrick-kearon"},
+    {"name": "Clark G. Gilbert", "calling": "Of the Quorum of the Twelve Apostles", "group": "Quorum of the Twelve", "ordained_apostle": 2025, "slug": "clark-g-gilbert"},
 ]
+
+# Current auxiliary and other general officer leaders (as of 2025)
+CURRENT_AUXILIARY_LEADERS = [
+    # Presidency of the Seventy
+    {"name": "Carl B. Cook", "calling": "Of the Presidency of the Seventy", "group": "Presidency of the Seventy"},
+    {"name": "José A. Teixeira", "calling": "Of the Presidency of the Seventy", "group": "Presidency of the Seventy"},
+    {"name": "Carlos A. Godoy", "calling": "Of the Presidency of the Seventy", "group": "Presidency of the Seventy"},
+    {"name": "Brent H. Nielson", "calling": "Of the Presidency of the Seventy", "group": "Presidency of the Seventy"},
+    {"name": "S. Mark Palmer", "calling": "Of the Presidency of the Seventy", "group": "Presidency of the Seventy"},
+    # Presiding Bishopric
+    {"name": "W. Christopher Waddell", "calling": "Presiding Bishop", "group": "Presiding Bishopric"},
+    {"name": "L. Todd Budge", "calling": "First Counselor in the Presiding Bishopric", "group": "Presiding Bishopric"},
+    {"name": "Sean Douglas", "calling": "Second Counselor in the Presiding Bishopric", "group": "Presiding Bishopric"},
+    # Relief Society General Presidency
+    {"name": "Camille N. Johnson", "calling": "Relief Society General President", "group": "Relief Society"},
+    {"name": "J. Anette Dennis", "calling": "First Counselor in the Relief Society General Presidency", "group": "Relief Society"},
+    {"name": "Kristin M. Yee", "calling": "Second Counselor in the Relief Society General Presidency", "group": "Relief Society"},
+    # Young Women General Presidency
+    {"name": "Emily Belle Freeman", "calling": "Young Women General President", "group": "Young Women"},
+    {"name": "Tamara W. Runia", "calling": "First Counselor in the Young Women General Presidency", "group": "Young Women"},
+    {"name": "Andrea Muñoz Spannaus", "calling": "Second Counselor in the Young Women General Presidency", "group": "Young Women"},
+    # Primary General Presidency
+    {"name": "Susan H. Porter", "calling": "Primary General President", "group": "Primary"},
+    {"name": "Amy A. Wright", "calling": "First Counselor in the Primary General Presidency", "group": "Primary"},
+    {"name": "Tracy Y. Browning", "calling": "Second Counselor in the Primary General Presidency", "group": "Primary"},
+    # Young Men General Presidency
+    {"name": "Steven J. Lund", "calling": "Young Men General President", "group": "Young Men"},
+    {"name": "Bradley R. Wilcox", "calling": "First Counselor in the Young Men General Presidency", "group": "Young Men"},
+    {"name": "Michael T. Nelson", "calling": "Second Counselor in the Young Men General Presidency", "group": "Young Men"},
+    # Sunday School General Presidency
+    {"name": "Mark L. Pace", "calling": "Sunday School General President", "group": "Sunday School"},
+    {"name": "Chad H. Webb", "calling": "First Counselor in the Sunday School General Presidency", "group": "Sunday School"},
+    {"name": "Jan E. Newman", "calling": "Second Counselor in the Sunday School General Presidency", "group": "Sunday School"},
+]
+
+ALL_ROSTER_LEADERS = CURRENT_LEADERS + CURRENT_AUXILIARY_LEADERS
 
 stop = set('the and of to a in that is was he for it with as his on be at by this had not are but from or have an they which one you were her all she there would their we him been has when who will more if out so up said what its about than into them can only other new some could time these two may then first any now such like our over man even most after also did many before must through back years where much your way well down should because each just those people how too little very come know shall upon being made would every life great good make things world day church them unto made long shall being much every'.split())
 
@@ -60,8 +104,105 @@ def get_top_words(texts, n=20):
     filtered = [w for w in all_words if len(w) > 4 and w not in stop]
     return [w for w, _ in Counter(filtered).most_common(n)]
 
-def get_signature_phrases(speaker_talks, all_talks_text, n=10):
+# Pre-computed global bigrams (computed once, reused for all speakers)
+_global_bigrams = None
+_global_bigram_total = 0
+
+def _ensure_global_bigrams(all_talks_text):
+    global _global_bigrams, _global_bigram_total
+    if _global_bigrams is not None:
+        return
+    print("  Pre-computing global bigrams (one time)...")
+    all_words = re.sub(r'[^a-z\s]', '', all_talks_text.lower()).split()
+    _global_bigrams = Counter()
+    for i in range(len(all_words) - 1):
+        w1, w2 = all_words[i], all_words[i+1]
+        if w1 not in stop and w2 not in stop and len(w1) > 3 and len(w2) > 3:
+            _global_bigrams[(w1, w2)] += 1
+    _global_bigram_total = sum(_global_bigrams.values()) or 1
+
+_title_words = {
+    'brother', 'sister', 'elder', 'president', 'bishop', 'apostle',
+    'prophet', 'patriarch', 'deacon', 'teacher', 'priest',
+    'uncle', 'aunt', 'grandpa', 'grandma', 'grandmother', 'grandfather',
+    'mother', 'father', 'daddy', 'mommy', 'wife', 'husband',
+    'friend', 'missionary', 'companion', 'neighbor', 'doctor',
+}
+
+_common_first_names = {
+    'james', 'john', 'robert', 'michael', 'william', 'david', 'richard',
+    'joseph', 'thomas', 'charles', 'daniel', 'matthew', 'anthony', 'mark',
+    'donald', 'steven', 'paul', 'andrew', 'joshua', 'kenneth', 'kevin',
+    'brian', 'george', 'timothy', 'ronald', 'edward', 'jason', 'jeffrey',
+    'ryan', 'jacob', 'gary', 'nicholas', 'eric', 'jonathan', 'stephen',
+    'larry', 'justin', 'scott', 'brandon', 'benjamin', 'samuel', 'raymond',
+    'peter', 'henry', 'carl', 'arthur', 'albert', 'ralph', 'bruce',
+    'russell', 'louis', 'philip', 'bobby', 'johnny', 'bradley', 'roy',
+    'mary', 'patricia', 'jennifer', 'linda', 'barbara', 'elizabeth',
+    'susan', 'jessica', 'sarah', 'karen', 'lisa', 'nancy', 'betty',
+    'margaret', 'sandra', 'ashley', 'dorothy', 'kimberly', 'emily',
+    'donna', 'michelle', 'carol', 'amanda', 'melissa', 'deborah',
+    'stephanie', 'rebecca', 'sharon', 'laura', 'cynthia', 'kathleen',
+    'amy', 'angela', 'shirley', 'anna', 'brenda', 'pamela', 'emma',
+    'nicole', 'helen', 'samantha', 'katherine', 'christine', 'debra',
+    'rachel', 'carolyn', 'janet', 'catherine', 'maria', 'heather',
+    'diane', 'ruth', 'julie', 'olivia', 'joyce', 'virginia', 'victoria',
+    'kelly', 'lauren', 'christina', 'joan', 'evelyn', 'judith', 'megan',
+    'andrea', 'cheryl', 'hannah', 'jacqueline', 'martha', 'gloria',
+    'bryce', 'spencer', 'dallin', 'brigham', 'hyrum', 'nephi', 'lehi',
+    'moroni', 'alma', 'ammon', 'abinadi', 'helaman', 'teancum',
+}
+
+_place_suffixes = {
+    'city', 'town', 'ville', 'burg', 'burgh', 'field', 'ford', 'land',
+    'shire', 'county', 'state', 'creek', 'lake', 'river', 'mountain',
+    'valley', 'island', 'beach', 'park', 'springs', 'falls',
+}
+_place_names = {
+    'idaho', 'utah', 'arizona', 'california', 'texas', 'florida',
+    'york', 'mexico', 'canada', 'england', 'germany', 'france',
+    'brazil', 'africa', 'japan', 'china', 'india', 'australia',
+    'europe', 'america', 'provo', 'logan', 'ogden', 'nauvoo',
+    'kirtland', 'palmyra', 'carthage', 'independence', 'jerusalem',
+    'bethlehem', 'nazareth', 'frankfurt', 'tokyo', 'london',
+    'mccammon', 'rexburg', 'seattle', 'chicago', 'denver',
+}
+
+_name_parts: set = set()
+
+def _ensure_name_parts(dataframe):
+    global _name_parts
+    if _name_parts:
+        return
+    for name in dataframe['speaker'].dropna().unique():
+        for part in re.sub(r'[^a-z\s]', '', name.lower()).split():
+            if len(part) > 2 and part not in stop:
+                _name_parts.add(part)
+
+def _looks_like_name(bigram):
+    w1, w2 = bigram
+    if w1 in _title_words or w2 in _title_words:
+        return True
+    if w1 in _common_first_names:
+        return True
+    both_name = (w1 in _name_parts) and (w2 in _name_parts)
+    if both_name:
+        return True
+    if w1 in _place_names or w2 in _place_names:
+        return True
+    if w2 in _place_suffixes:
+        return True
+    return False
+
+def get_signature_phrases(speaker_talks, all_talks_text, n=10, speaker_name=''):
     """Find 2-3 word phrases this speaker uses disproportionately more than others."""
+    _ensure_global_bigrams(all_talks_text)
+
+    own_name_parts = set()
+    for part in re.sub(r'[^a-z\s]', '', speaker_name.lower()).split():
+        if len(part) > 2:
+            own_name_parts.add(part)
+
     speaker_text = ' '.join(speaker_talks).lower()
     speaker_words = re.sub(r'[^a-z\s]', '', speaker_text).split()
 
@@ -72,23 +213,19 @@ def get_signature_phrases(speaker_talks, all_talks_text, n=10):
         if w1 not in stop and w2 not in stop and len(w1) > 3 and len(w2) > 3:
             speaker_bigrams[(w1, w2)] += 1
 
-    # Compare to overall
-    all_words = re.sub(r'[^a-z\s]', '', all_talks_text.lower()).split()
-    all_bigrams = Counter()
-    for i in range(len(all_words) - 1):
-        w1, w2 = all_words[i], all_words[i+1]
-        if w1 not in stop and w2 not in stop and len(w1) > 3 and len(w2) > 3:
-            all_bigrams[(w1, w2)] += 1
-
-    # Find phrases with highest relative frequency
+    # Find phrases with highest relative frequency, filtering out names
     results = []
     total_speaker = sum(speaker_bigrams.values()) or 1
-    total_all = sum(all_bigrams.values()) or 1
-    for bigram, count in speaker_bigrams.most_common(200):
-        if count < 3:
+    min_count = max(3, len(speaker_talks) // 10)
+    for bigram, count in speaker_bigrams.most_common(300):
+        if count < min_count:
+            continue
+        if _looks_like_name(bigram):
+            continue
+        if bigram[0] in own_name_parts or bigram[1] in own_name_parts:
             continue
         speaker_freq = count / total_speaker
-        all_freq = all_bigrams.get(bigram, 1) / total_all
+        all_freq = _global_bigrams.get(bigram, 1) / _global_bigram_total
         ratio = speaker_freq / all_freq if all_freq > 0 else 0
         if ratio > 1.5:
             results.append({
@@ -99,6 +236,8 @@ def get_signature_phrases(speaker_talks, all_talks_text, n=10):
 
     results.sort(key=lambda x: x['count'] * x['ratio'], reverse=True)
     return results[:n]
+
+_ensure_name_parts(df)
 
 scripture_pattern = r'(?:(?:1|2|3|4)\s+)?(?:Nephi|Mosiah|Alma|Helaman|Ether|Moroni|Mormon|Jacob|Genesis|Exodus|Isaiah|Jeremiah|Ezekiel|Daniel|Psalms?|Proverbs|Matthew|Mark|Luke|John|Acts|Romans|Corinthians|Galatians|Ephesians|Philippians|Colossians|Thessalonians|Timothy|Hebrews|James|Peter|Revelation|D&C|Moses|Abraham)\s+\d+'
 
@@ -148,7 +287,7 @@ for leader in CURRENT_LEADERS:
         })
 
     # Signature phrases
-    sig_phrases = get_signature_phrases(talk_texts, all_talks_text)
+    sig_phrases = get_signature_phrases(talk_texts, all_talks_text, speaker_name=name)
 
     # Top words
     top_words = get_top_words(talk_texts)
@@ -197,17 +336,21 @@ recent = df[df.year >= 2020]
 all_recent_speakers = recent.speaker.unique()
 
 roster = []
-for leader in CURRENT_LEADERS:
+for leader in ALL_ROSTER_LEADERS:
     name = leader['name']
-    # Find in data
-    speaker_talks = df[df.speaker == name]
-    if len(speaker_talks) == 0:
-        for s in df.speaker.unique():
-            if leader['name'].split()[-1].lower() in s.lower():
-                speaker_talks = df[df.speaker == s]
-                if len(speaker_talks) > 0:
-                    name = s
-                    break
+    name_parts = [p.lower() for p in leader['name'].split() if len(p) > 1]
+    last_name = name_parts[-1]
+    # Find name variants: must match last name AND at least one other name part
+    # This handles "Bishop Gérald Caussé" matching "Gérald Caussé"
+    matching_names = []
+    for s in df.speaker.unique():
+        s_lower = s.lower()
+        if last_name in s_lower:
+            # Check if at least one other name part also matches
+            other_matches = sum(1 for p in name_parts[:-1] if p in s_lower)
+            if other_matches > 0 or len(name_parts) == 1:
+                matching_names.append(s)
+    speaker_talks = df[df.speaker.isin(matching_names)] if matching_names else df[df.speaker == name]
 
     last_talk_year = int(speaker_talks.year.max()) if len(speaker_talks) > 0 else 0
     last_talk_season = speaker_talks[speaker_talks.year == last_talk_year].season.iloc[-1] if len(speaker_talks) > 0 else ''
@@ -234,6 +377,50 @@ for leader in CURRENT_LEADERS:
         'recentTalks': int(len(recent_talks)),
         'talksPerConf': round(float(talks_per_conf), 2),
     })
+
+# Add GA Seventies to roster dynamically (speakers whose most recent calling includes "Seventy"
+# and who spoke in the last 5 years, excluding those already in the static roster)
+static_names = {l['name'].lower() for l in ALL_ROSTER_LEADERS}
+seventy_calling_pattern = r'(?i)sevent'
+recent_seventy_talks = df[(df.year >= 2020) & df.calling.str.contains(seventy_calling_pattern, na=False)]
+recent_seventy_speakers = recent_seventy_talks.speaker.unique()
+
+for name in recent_seventy_speakers:
+    if name.lower() in static_names:
+        continue
+    speaker_talks = df[df.speaker == name]
+    latest_row = speaker_talks.sort_values(['year', 'season']).iloc[-1]
+    # Only include if their most recent talk was as a Seventy (not emeritus)
+    if not re.search(seventy_calling_pattern, str(latest_row.calling)):
+        continue
+    if 'emeritus' in str(latest_row.calling).lower():
+        continue
+
+    last_talk_year = int(speaker_talks.year.max())
+    last_talk_season = speaker_talks[speaker_talks.year == last_talk_year].season.iloc[-1]
+    recent_talks_count = len(speaker_talks[speaker_talks.year >= 2020])
+
+    all_confs = sorted(df[['year', 'season']].drop_duplicates().values.tolist(), key=lambda x: (x[0], 0 if x[1] == 'April' else 1))
+    last_conf_idx = -1
+    for i, (y, s) in enumerate(all_confs):
+        if y == last_talk_year and s == last_talk_season:
+            last_conf_idx = i
+    confs_since = len(all_confs) - 1 - last_conf_idx if last_conf_idx >= 0 else 999
+
+    slug = re.sub(r'[^a-z0-9]+', '-', name.lower()).strip('-')
+    roster.append({
+        'name': name,
+        'calling': latest_row.calling,
+        'group': 'General Authority Seventies',
+        'slug': slug,
+        'totalTalks': int(len(speaker_talks)),
+        'lastTalkYear': last_talk_year,
+        'lastTalkSeason': last_talk_season,
+        'confsSinceLastTalk': confs_since,
+        'recentTalks': int(recent_talks_count),
+    })
+
+print(f"  Roster: {len(roster)} leaders ({len([r for r in roster if r['group'] == 'General Authority Seventies'])} GA Seventies)")
 
 roster.sort(key=lambda x: -x['confsSinceLastTalk'])
 insights['roster'] = roster
@@ -291,7 +478,7 @@ for name in seventy_speakers:
         })
 
     # Signature phrases
-    sig_phrases = get_signature_phrases(talk_texts, all_talks_text)
+    sig_phrases = get_signature_phrases(talk_texts, all_talks_text, speaker_name=name)
 
     # Top words
     top_words = get_top_words(talk_texts)
@@ -332,6 +519,90 @@ for name in seventy_speakers:
 seventy_profiles.sort(key=lambda x: -x['totalTalks'])
 insights['seventyProfiles'] = seventy_profiles
 print(f"  Generated {len(seventy_profiles)} seventy profiles")
+
+# ============================================================
+# 2c. WOMEN PROFILES - All speakers who served in women's organizations
+# ============================================================
+print("Computing Women profiles...")
+
+women_pattern_calling = r'(?i)relief society|young women|primary'
+women_speakers = df[df.calling.str.contains(women_pattern_calling, na=False)].speaker.unique()
+print(f"  Found {len(women_speakers)} unique women speakers")
+
+women_profiles = []
+for name in women_speakers:
+    talks = df[df.speaker == name].sort_values('year')
+    if len(talks) == 0:
+        continue
+
+    # Determine their women-org-specific calling (most recent one matching the pattern)
+    women_talks = talks[talks.calling.str.contains(women_pattern_calling, na=False)]
+    women_calling = women_talks.iloc[-1].calling if len(women_talks) > 0 else ''
+
+    # Their most recent calling overall
+    latest_calling = talks.iloc[-1].calling
+
+    talk_texts = talks.talk.dropna().tolist()
+    if len(talk_texts) == 0:
+        continue
+
+    # Scripture refs
+    all_refs = []
+    for text in talk_texts:
+        refs = re.findall(scripture_pattern, text)
+        all_refs.extend(refs)
+    top_scriptures = [{'ref': r, 'count': c} for r, c in Counter(all_refs).most_common(10)]
+
+    # Christ mentions per talk over time
+    christ_by_year = []
+    for _, row in talks.iterrows():
+        if pd.notna(row.talk):
+            mentions = len(re.findall(christ_pattern, row.talk))
+            christ_by_year.append({'year': int(row.year), 'season': row.season, 'mentions': mentions})
+
+    # Talk list
+    talk_list = []
+    for _, row in talks.iterrows():
+        talk_list.append({
+            'title': row.title,
+            'year': int(row.year),
+            'season': row.season,
+            'wordCount': int(row.word_count) if pd.notna(row.word_count) else 0,
+            'calling': row.calling,
+            'url': row.url if pd.notna(row.url) else '',
+        })
+
+    # Signature phrases
+    sig_phrases = get_signature_phrases(talk_texts, all_talks_text, speaker_name=name)
+
+    # Top words
+    top_words = get_top_words(talk_texts)
+
+    slug = re.sub(r'[^a-z0-9]+', '-', name.lower()).strip('-')
+
+    profile = {
+        'name': name,
+        'womenCalling': women_calling,
+        'latestCalling': latest_calling,
+        'slug': slug,
+        'totalTalks': int(len(talks)),
+        'firstTalk': int(talks.year.min()),
+        'lastTalk': int(talks.year.max()),
+        'totalConferences': int(talks.conf.nunique()),
+        'avgWordsPerTalk': int(talks.word_count.mean()) if pd.notna(talks.word_count).any() else 0,
+        'avgChristMentions': round(float(talks.talk.str.count(christ_pattern).mean()), 1),
+        'topWords': top_words,
+        'signaturePhrases': sig_phrases,
+        'topScriptures': top_scriptures,
+        'christByYear': christ_by_year,
+        'talks': talk_list,
+        'yearsActive': [int(y) for y in sorted(talks.year.unique().tolist())],
+    }
+    women_profiles.append(profile)
+
+women_profiles.sort(key=lambda x: -x['totalTalks'])
+insights['womenProfiles'] = women_profiles
+print(f"  Generated {len(women_profiles)} women profiles")
 
 # ============================================================
 # 3. APRIL VS OCTOBER
@@ -770,12 +1041,13 @@ for event in world_events:
         for kw in event['keywords']:
             keyword_hits += len(re.findall(rf'\b{kw}\b', text, re.IGNORECASE))
 
-    # Compare to average
-    avg_year = df.groupby('year').apply(lambda x: sum(
-        len(re.findall(rf'\b{kw}\b', t, re.IGNORECASE))
-        for t in x.talk.dropna()
-        for kw in event['keywords']
-    )).mean()
+    # Compare to average: count keywords across all years efficiently
+    total_kw_hits = 0
+    for text in df.talk.dropna():
+        for kw in event['keywords']:
+            total_kw_hits += text.lower().count(kw.lower())
+    num_years = df.year.nunique()
+    avg_year = total_kw_hits / max(num_years, 1)
 
     history_data.append({
         **event,
@@ -815,6 +1087,345 @@ insights['serviceTimelines'] = {
     'subtitle': 'Who has spoken at conference over the longest period of time?',
     'speakers': speaker_spans[:40],
 }
+
+# ============================================================
+# 10. SPEAKER FINGERPRINTS
+# ============================================================
+print("Computing speaker fingerprints...")
+
+# Only speakers with 10+ talks
+fp_speakers = df.speaker.value_counts()
+fp_speakers = fp_speakers[fp_speakers >= 10].index
+
+# Global averages for style metrics
+all_sentences = []
+all_question_counts = []
+all_scripture_counts = []
+all_story_counts = []
+all_you_counts = []
+all_christ_counts = []
+all_excl_counts = []
+all_word_totals = []
+
+for text in df.talk.dropna():
+    words = text.split()
+    wc = len(words)
+    if wc < 50:
+        continue
+    sentences = re.split(r'[.!?]+', text)
+    sentences = [s.strip() for s in sentences if len(s.strip()) > 5]
+    avg_sent_len = sum(len(s.split()) for s in sentences) / max(len(sentences), 1)
+    questions = len(re.findall(r'\?', text))
+    scriptures = len(re.findall(scripture_pattern, text))
+    stories = len(re.findall(r'(?i)\b(i remember|i recall|when i was|years ago|one day|let me share|my (mother|father|wife|husband|friend))\b', text))
+    you_count = len(re.findall(r'(?i)\byou\b', text))
+    christ_count = len(re.findall(christ_pattern, text))
+    excl_count = len(re.findall(r'!', text))
+
+    all_sentences.append(avg_sent_len)
+    all_question_counts.append(questions / wc * 1000)
+    all_scripture_counts.append(scriptures / wc * 1000)
+    all_story_counts.append(stories / wc * 1000)
+    all_you_counts.append(you_count / wc * 1000)
+    all_christ_counts.append(christ_count / wc * 1000)
+    all_excl_counts.append(excl_count / wc * 1000)
+    all_word_totals.append(wc)
+
+global_style = {
+    'avgSentenceLength': round(sum(all_sentences) / max(len(all_sentences), 1), 1),
+    'questionRate': round(sum(all_question_counts) / max(len(all_question_counts), 1), 2),
+    'scriptureRate': round(sum(all_scripture_counts) / max(len(all_scripture_counts), 1), 2),
+    'iWeRatio': 0,  # placeholder
+    'storyRate': round(sum(all_story_counts) / max(len(all_story_counts), 1), 2),
+    'youRate': round(sum(all_you_counts) / max(len(all_you_counts), 1), 2),
+    'christRate': round(sum(all_christ_counts) / max(len(all_christ_counts), 1), 2),
+    'exclamationRate': round(sum(all_excl_counts) / max(len(all_excl_counts), 1), 2),
+}
+
+# Global topic profile
+fp_themes = ['faith', 'repentance', 'baptism', 'temple', 'covenant', 'family',
+    'prayer', 'scriptures', 'service', 'missionary', 'atonement', 'forgiveness',
+    'obedience', 'charity', 'revelation', 'priesthood']
+
+global_topic_counts = Counter()
+total_fp_talks = 0
+for text in df.talk.dropna():
+    lower = text.lower()
+    for theme in fp_themes:
+        if theme in lower:
+            global_topic_counts[theme] += 1
+    total_fp_talks += 1
+
+global_topic_profile = {theme: round(global_topic_counts[theme] / max(total_fp_talks, 1), 4) for theme in fp_themes}
+
+# Per-speaker fingerprints
+fingerprints = []
+for speaker in fp_speakers:
+    st = df[df.speaker == speaker]
+    talk_texts = st.talk.dropna().tolist()
+    if len(talk_texts) < 3:
+        continue
+
+    total_words = sum(len(t.split()) for t in talk_texts)
+
+    # Style metrics
+    sent_lengths = []
+    q_rates = []
+    sc_rates = []
+    st_rates = []
+    you_rates = []
+    ch_rates = []
+    ex_rates = []
+
+    for text in talk_texts:
+        words = text.split()
+        wc = len(words)
+        if wc < 50:
+            continue
+        sentences = re.split(r'[.!?]+', text)
+        sentences = [s.strip() for s in sentences if len(s.strip()) > 5]
+        avg_sl = sum(len(s.split()) for s in sentences) / max(len(sentences), 1)
+        sent_lengths.append(avg_sl)
+        q_rates.append(len(re.findall(r'\?', text)) / wc * 1000)
+        sc_rates.append(len(re.findall(scripture_pattern, text)) / wc * 1000)
+        st_rates.append(len(re.findall(r'(?i)\b(i remember|i recall|when i was|years ago|one day|let me share|my (mother|father|wife|husband|friend))\b', text)) / wc * 1000)
+        you_rates.append(len(re.findall(r'(?i)\byou\b', text)) / wc * 1000)
+        ch_rates.append(len(re.findall(christ_pattern, text)) / wc * 1000)
+        ex_rates.append(len(re.findall(r'!', text)) / wc * 1000)
+
+    if not sent_lengths:
+        continue
+
+    style = {
+        'avgSentenceLength': round(sum(sent_lengths) / len(sent_lengths), 1),
+        'questionRate': round(sum(q_rates) / len(q_rates), 2),
+        'scriptureRate': round(sum(sc_rates) / len(sc_rates), 2),
+        'iWeRatio': 0,
+        'storyRate': round(sum(st_rates) / len(st_rates), 2),
+        'youRate': round(sum(you_rates) / len(you_rates), 2),
+        'christRate': round(sum(ch_rates) / len(ch_rates), 2),
+        'exclamationRate': round(sum(ex_rates) / len(ex_rates), 2),
+    }
+
+    # Topic profile for this speaker
+    speaker_topic_counts = Counter()
+    speaker_talk_count = len(talk_texts)
+    for text in talk_texts:
+        lower = text.lower()
+        for theme in fp_themes:
+            if theme in lower:
+                speaker_topic_counts[theme] += 1
+    topic_profile = {theme: round(speaker_topic_counts[theme] / max(speaker_talk_count, 1), 4) for theme in fp_themes}
+
+    # Find top topic (biggest deviation above average)
+    top_topic = ''
+    top_topic_ratio = 0
+    for theme in fp_themes:
+        g = global_topic_profile.get(theme, 0)
+        s = topic_profile.get(theme, 0)
+        ratio = s / g if g > 0 else 0
+        if ratio > top_topic_ratio:
+            top_topic_ratio = ratio
+            top_topic = theme
+
+    # Distinctiveness score: sum of squared deviations from global averages
+    score = 0
+    for key in ['avgSentenceLength', 'questionRate', 'scriptureRate', 'storyRate', 'youRate', 'christRate', 'exclamationRate']:
+        g = global_style.get(key, 1) or 1
+        s = style.get(key, 0)
+        score += ((s - g) / g) ** 2
+    for theme in fp_themes:
+        g = global_topic_profile.get(theme, 0) or 0.01
+        s = topic_profile.get(theme, 0)
+        score += ((s - g) / g) ** 2
+    distinctiveness = round(math.sqrt(score) * 10, 1)
+
+    # Signature phrases
+    sig_phrases = get_signature_phrases(talk_texts, all_talks_text, n=6, speaker_name=speaker)
+
+    fingerprints.append({
+        'speaker': speaker,
+        'talks': int(len(st)),
+        'totalWords': int(total_words),
+        'distinctivenessScore': distinctiveness,
+        'signaturePhrases': sig_phrases,
+        'style': style,
+        'topicProfile': topic_profile,
+        'topTopic': top_topic,
+        'topTopicRatio': round(top_topic_ratio, 2),
+    })
+
+fingerprints.sort(key=lambda x: -x['distinctivenessScore'])
+insights['speakerFingerprints'] = {
+    'title': 'Speaker Fingerprint',
+    'subtitle': 'What makes each speaker sound like themselves',
+    'globalStyle': global_style,
+    'globalTopicProfile': global_topic_profile,
+    'speakers': fingerprints,
+}
+print(f"  Generated {len(fingerprints)} speaker fingerprints")
+
+# ============================================================
+# INFLUENCE WEB - Pre-compute the citation graph
+# ============================================================
+print("Computing influence web (citation graph)...")
+
+min_talks_for_citation = 10
+speaker_talk_counts = df.groupby('speaker').size()
+citation_speakers = speaker_talk_counts[speaker_talk_counts >= min_talks_for_citation].index.tolist()
+print(f"  Tracking {len(citation_speakers)} speakers with {min_talks_for_citation}+ talks")
+
+# Build search patterns for each speaker
+speaker_patterns = []
+for s in citation_speakers:
+    parts = s.split()
+    last_name = parts[-1].lower()
+    patterns = [
+        s.lower(),
+        f'president {last_name}',
+        f'elder {last_name}',
+        f'sister {last_name}',
+        f'bishop {last_name}',
+    ]
+    speaker_patterns.append({'name': s, 'patterns': patterns})
+
+# Scan all talks
+edge_counts = {}
+for _, talk in df.iterrows():
+    text = (talk.talk or '').lower() if pd.notna(talk.talk) else ''
+    if not text:
+        continue
+    for sp in speaker_patterns:
+        if sp['name'] == talk.speaker:
+            continue
+        for pattern in sp['patterns']:
+            if pattern in text:
+                key = (talk.speaker, sp['name'])
+                edge_counts[key] = edge_counts.get(key, 0) + 1
+                break
+
+# Build edges and stats
+edges = [{'source': k[0], 'target': k[1], 'count': v} for k, v in edge_counts.items()]
+edges.sort(key=lambda e: -e['count'])
+
+stats_map = {}
+for e in edges:
+    if e['source'] not in stats_map:
+        stats_map[e['source']] = {'speaker': e['source'], 'citedByCount': 0, 'citesCount': 0, 'totalIncoming': 0, 'totalOutgoing': 0}
+    if e['target'] not in stats_map:
+        stats_map[e['target']] = {'speaker': e['target'], 'citedByCount': 0, 'citesCount': 0, 'totalIncoming': 0, 'totalOutgoing': 0}
+    stats_map[e['source']]['citesCount'] += 1
+    stats_map[e['source']]['totalOutgoing'] += e['count']
+    stats_map[e['target']]['citedByCount'] += 1
+    stats_map[e['target']]['totalIncoming'] += e['count']
+
+insights['influenceWeb'] = {
+    'edges': edges,
+    'stats': list(stats_map.values()),
+    'speakers': citation_speakers,
+    'totalTalksScanned': len(df),
+}
+print(f"  Generated {len(edges)} citation edges across {len(stats_map)} speakers")
+
+# ============================================================
+# 12. THE SILENCE - phrase lifecycle analysis
+# ============================================================
+print("Computing phrase lifecycles...")
+
+TRACKED_PHRASES = [
+    'free agency', 'mormon', 'mormonism', 'lds church', 'gentiles',
+    'lamanites', 'nephites', 'terrestrial kingdom', 'telestial',
+    'home teaching', 'visiting teaching', 'ward teaching', 'mutual improvement',
+    'stake missionary', 'gold plates', 'urim and thummim', 'great and abominable',
+    'iron curtain', 'communist', 'nuclear', 'anti-christ', 'secret combinations',
+    'welfare square', 'firesides', 'correlation', 'cultural hall',
+    'church welfare program', 'road show', 'gold and green ball',
+    'deacons quorum', 'priests quorum', 'mia', 'bee-hive',
+    'stake conference', 'satellite broadcast',
+    'covenant path', 'ministering', 'gathering of israel', 'hear him',
+    'come follow me', 'sacred grove', 'mental health', 'self-reliance',
+    'temple covenant', 'global church', 'church of jesus christ',
+    'family history', 'indexing', 'belonging', 'covenant belonging',
+    'tender mercies', 'hasten the work', 'ponderize', 'light the world',
+    'because of him', 'i am a child of god', 'press forward',
+    'rescue', 'hastening', 'social media', 'internet',
+    'gender', 'same-sex', 'transgender', 'addiction',
+    'pornography', 'anxiety', 'depression', 'trauma',
+    'celestial kingdom', 'aaronic priesthood', 'melchizedek priesthood',
+    'sacrament meeting', 'relief society', 'young women',
+    'primary', 'book of mormon', 'bible', 'restoration',
+    'second coming', 'millennium', 'zion',
+    'missionary work', 'temple work', 'family home evening',
+    'testimony', 'revelation', 'prophet',
+]
+
+silence_analyses = []
+all_decades_set = set()
+
+for phrase in TRACKED_PHRASES:
+    lp = phrase.lower()
+    by_decade = Counter()
+    by_year = Counter()
+    for _, row in df.iterrows():
+        text = (row.talk or '') if pd.notna(row.talk) else ''
+        text_lower = text.lower()
+        count = 0
+        idx = text_lower.find(lp)
+        while idx != -1:
+            count += 1
+            idx = text_lower.find(lp, idx + len(lp))
+        if count > 0:
+            decade = f"{int(row.year) // 10 * 10}s"
+            by_decade[decade] += count
+            by_year[int(row.year)] += count
+            all_decades_set.add(decade)
+
+    if sum(by_decade.values()) == 0:
+        continue
+
+    decades = [{'decade': d, 'count': c} for d, c in sorted(by_decade.items())]
+    years = [{'year': y, 'count': c} for y, c in sorted(by_year.items())]
+    peak = max(decades, key=lambda x: x['count'])
+    total = sum(d['count'] for d in decades)
+    first_year = years[0]['year'] if years else 0
+    last_year = years[-1]['year'] if years else 0
+    recent_count = sum(d['count'] for d in decades if d['decade'] in ('2010s', '2020s'))
+    early_count = sum(d['count'] for d in decades if d['decade'] < '2000s')
+    late_count = sum(d['count'] for d in decades if d['decade'] >= '2010s')
+    recent_decade = next((d['count'] for d in decades if d['decade'] == '2020s'), 0)
+
+    status = 'active'
+    if peak['count'] > 3 and recent_decade <= max(1, peak['count'] * 0.15) and last_year < 2022:
+        status = 'vanished'
+    elif late_count >= 5 and late_count > early_count * 3:
+        status = 'risen'
+
+    change_ratio = (peak['count'] / max(1, recent_decade)) if status == 'vanished' else (late_count / max(1, early_count)) if status == 'risen' else 0
+
+    silence_analyses.append({
+        'phrase': phrase,
+        'decades': decades,
+        'years': years,
+        'peakDecade': peak['decade'],
+        'peakCount': peak['count'],
+        'lastYear': last_year,
+        'firstYear': first_year,
+        'totalMentions': total,
+        'recentCount': recent_count,
+        'status': status,
+        'changeRatio': round(change_ratio, 2),
+    })
+
+all_decades = sorted(all_decades_set)
+insights['silence'] = {
+    'title': 'Lost & Found',
+    'subtitle': 'Phrases that vanished and emerged in conference',
+    'allDecades': all_decades,
+    'phrases': silence_analyses,
+}
+vanished_count = sum(1 for a in silence_analyses if a['status'] == 'vanished')
+risen_count = sum(1 for a in silence_analyses if a['status'] == 'risen')
+print(f"  {len(silence_analyses)} phrases tracked: {vanished_count} vanished, {risen_count} risen")
 
 # ============================================================
 # SAVE

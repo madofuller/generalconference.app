@@ -57,8 +57,8 @@ export default function AprilVsOctoberPage() {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="aprilTalks" fill="#E8B931" name="April" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="octoberTalks" fill="#2B7A9E" name="October" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="aprilTalks" fill="#E8B931" name="April" radius={[2, 2, 0, 0]} isAnimationActive={false} />
+                <Bar dataKey="octoberTalks" fill="#2B7A9E" name="October" radius={[2, 2, 0, 0]} isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -73,8 +73,8 @@ export default function AprilVsOctoberPage() {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="aprilAvgWords" fill="#E8B931" name="April" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="octoberAvgWords" fill="#2B7A9E" name="October" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="aprilAvgWords" fill="#E8B931" name="April" radius={[2, 2, 0, 0]} isAnimationActive={false} />
+                <Bar dataKey="octoberAvgWords" fill="#2B7A9E" name="October" radius={[2, 2, 0, 0]} isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </div>

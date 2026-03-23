@@ -67,3 +67,4 @@ Thumbs.db
 .cache/
 transformers_cache/
 
+.next/

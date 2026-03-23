@@ -4,7 +4,27 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { Navigation, TopAppBar } from '@/components/navigation';
 import { loadInsights, SeventyProfile } from '@/lib/insights';
+import { SPEAKER_ALIASES } from '@/lib/data-loader';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
+
+function deduplicateProfiles(raw: SeventyProfile[]): SeventyProfile[] {
+  const merged = new Map<string, SeventyProfile>();
+  for (const p of raw) {
+    const canonical = SPEAKER_ALIASES[p.name] || p.name;
+    if (merged.has(canonical)) {
+      const existing = merged.get(canonical)!;
+      existing.totalTalks += p.totalTalks;
+      existing.totalConferences = (existing.totalConferences || 0) + (p.totalConferences || 0);
+      if (p.firstTalk && (!existing.firstTalk || p.firstTalk < existing.firstTalk)) existing.firstTalk = p.firstTalk;
+      if (p.lastTalk && (!existing.lastTalk || p.lastTalk > existing.lastTalk)) existing.lastTalk = p.lastTalk;
+      if (p.talks) existing.talks = [...(existing.talks || []), ...p.talks];
+      if (p.yearsActive) existing.yearsActive = [...new Set([...(existing.yearsActive || []), ...p.yearsActive])];
+    } else {
+      merged.set(canonical, { ...p, name: canonical, slug: canonical.toLowerCase().replace(/[^a-z0-9]+/g, '-') });
+    }
+  }
+  return [...merged.values()];
+}
 
 export default function SeventyDetailPage() {
   const params = useParams();
@@ -12,7 +32,8 @@ export default function SeventyDetailPage() {
 
   useEffect(() => {
     loadInsights().then(i => {
-      const p = (i.seventyProfiles || []).find(a => a.slug === params.slug);
+      const profiles = deduplicateProfiles(i.seventyProfiles || []);
+      const p = profiles.find(a => a.slug === params.slug);
       setProfile(p || null);
     });
   }, [params.slug]);
@@ -94,10 +115,10 @@ export default function SeventyDetailPage() {
             <div className="bg-white p-4 md:p-6 lg:p-8 rounded-xl shadow-[0px_12px_32px_rgba(27,94,123,0.06)] mb-10">
               <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-[#1B5E7B]/60 mb-4">Most Quoted Scriptures</h3>
               <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={profile.topScriptures.slice(0, 10)} layout="vertical" margin={{ left: 20 }}>
+                <BarChart data={profile.topScriptures.slice(0, 10).map(s => ({ scripture: s.ref, count: s.count }))} layout="vertical" margin={{ left: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#ece8d9" />
                   <XAxis type="number" />
-                  <YAxis type="category" dataKey="ref" width={120} tick={{ fontSize: 11, fill: '#1c1c13' }} />
+                  <YAxis type="category" dataKey="scripture" width={120} tick={{ fontSize: 11, fill: '#1c1c13' }} />
                   <Tooltip />
                   <Bar dataKey="count" fill="#14b8a6" radius={[0, 6, 6, 0]} />
                 </BarChart>
