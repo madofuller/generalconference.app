@@ -19,7 +19,7 @@ export default function SearchPage() {
   return (
     <div className="flex min-h-screen">
       <Navigation />
-      <main className="ml-0 lg:ml-[260px] min-h-screen flex-1 min-w-0 overflow-x-hidden pt-20 lg:pt-0 pt-20 lg:pt-0" style={{ background: '#fdf9e9' }}>
+      <main className="ml-0 lg:ml-[260px] min-h-screen flex-1 min-w-0 overflow-x-hidden pt-20 lg:pt-0" style={{ background: '#fdf9e9' }}>
         <TopAppBar title="Search & Study" subtitle="Browse, search, and explore conference talks" />
         <Suspense fallback={<div className="px-4 md:px-8 lg:px-12 py-20 text-center text-[#1c1c13]/40">Loading...</div>}>
           <PageTabs tabs={TABS} defaultTab="talks">
