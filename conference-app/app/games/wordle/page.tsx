@@ -220,7 +220,7 @@ export default function WordlePage() {
                 const grid = guesses.map(g =>
                   checkWordleGuess(g, targetWord).map(r => EMOJI[r]).join('')
                 ).join('\n');
-                return `Conference Wordle ${won ? guesses.length : 'X'}/6\n\n${grid}\n\ngeneralconference.app`;
+                return `Conference Wordle ${won ? guesses.length : 'X'}/6\n\n${grid}\n\nhttps://generalconference.app/games/wordle`;
               }} />
             </div>
           )}
