@@ -226,9 +226,9 @@ export default function WordlePage() {
           )}
 
           {/* Keyboard */}
-          <div className="flex flex-col gap-1.5 w-full max-w-[500px]">
+          <div className="flex flex-col gap-1.5 w-full">
             {KEYBOARD_ROWS.map((row, ri) => (
-              <div key={ri} className="flex gap-1 justify-center">
+              <div key={ri} className="flex gap-1 sm:gap-1.5 justify-center">
                 {row.map(key => {
                   const isSpecial = key === 'ENTER' || key === '⌫';
                   const colorStatus = keyColors.get(key);
@@ -238,7 +238,7 @@ export default function WordlePage() {
                     <button
                       key={key}
                       onClick={() => handleKey(key === '⌫' ? 'BACKSPACE' : key)}
-                      className={`${bgClass} ${isSpecial ? 'px-2 sm:px-3 md:px-4 text-[10px] sm:text-xs' : 'px-1.5 sm:px-2.5 md:px-3.5 text-xs sm:text-sm md:text-base'} py-3 sm:py-3.5 md:py-4 rounded-md font-bold transition-colors active:scale-95 active:bg-[#787c7e]/80`}
+                      className={`${bgClass} ${isSpecial ? 'px-3 sm:px-4 md:px-5 text-xs sm:text-sm' : 'flex-1 max-w-[36px] sm:max-w-[44px] md:max-w-[52px] text-sm sm:text-base md:text-lg'} py-4 sm:py-4 md:py-5 rounded-lg font-bold transition-colors active:scale-95 active:bg-[#787c7e]/80 min-h-[52px] sm:min-h-[56px]`}
                     >
                       {key}
                     </button>
