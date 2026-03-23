@@ -271,11 +271,11 @@ export function TopAppBar({ title, subtitle, hideEraToggle = false, scrollsAway 
 
   return (
     <header className={`${scrollsAway ? 'lg:sticky lg:top-0' : 'sticky top-20 lg:top-0'} w-full z-30 bg-[#fdf9e9]/80 backdrop-blur-xl px-4 py-3 md:px-8 md:py-4`}>
-      <div className="flex justify-between items-center">
-        <div className="lg:ml-0">
-          <h1 className="text-lg md:text-2xl font-bold text-[#1c1c13] tracking-tight">{title}</h1>
+      <div className="flex justify-between items-center gap-3">
+        <div className="min-w-0 flex-1 lg:flex-none">
+          <h1 className="text-base sm:text-lg md:text-2xl font-bold text-[#1c1c13] tracking-tight truncate">{title}</h1>
           {subtitle && (
-            <p className="text-xs md:text-sm font-medium text-[#1c1c13]/60 hidden sm:block">{subtitle}</p>
+            <p className="text-xs md:text-sm font-medium text-[#1c1c13]/60 hidden sm:block truncate">{subtitle}</p>
           )}
         </div>
         {!hideEraToggle && (
