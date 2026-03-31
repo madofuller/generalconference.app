@@ -89,7 +89,7 @@ export default function ServicePage() {
   }
 
   const minYear = speakers.length > 0 ? Math.min(...speakers.map(s => s.firstYear)) : 1970;
-  const maxYear = speakers.length > 0 ? Math.max(...speakers.map(s => s.lastYear)) : 2025;
+  const maxYear = speakers.length > 0 ? Math.max(...speakers.map(s => s.lastYear)) : new Date().getFullYear();
   const range = maxYear - minYear || 1;
 
   const startDecade = Math.floor(minYear / 10) * 10;

@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useFilteredFullTalks } from '@/lib/filter-context';
-import { LIVING_SPEAKERS } from '@/lib/types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 const BOM_PATTERN = /(?:(?:1|2|3|4)\s+)?(?:Nephi|Mosiah|Alma|Helaman|Ether|Moroni|Mormon|Jacob)\s+\d+/g;
@@ -24,9 +23,43 @@ interface SpeakerHabit {
   otPct: number;
 }
 
+function compactSpeakerLabel(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length <= 2) return name;
+  const last = parts[parts.length - 1];
+  const initials = parts.slice(0, -1).map(p => `${p[0]}.`).join(' ');
+  return `${initials} ${last}`;
+}
+
+const CURRENT_FIRST_PRESIDENCY_AND_TWELVE = new Set([
+  'Russell M. Nelson',
+  'Dallin H. Oaks',
+  'Henry B. Eyring',
+  'Jeffrey R. Holland',
+  'Dieter F. Uchtdorf',
+  'David A. Bednar',
+  'Quentin L. Cook',
+  'D. Todd Christofferson',
+  'Neil L. Andersen',
+  'Ronald A. Rasband',
+  'Gary E. Stevenson',
+  'Dale G. Renlund',
+  'Gerrit W. Gong',
+  'Ulisses Soares',
+  'Patrick Kearon',
+]);
+
 export function HabitsContent() {
   const { talks, loading } = useFilteredFullTalks();
   const [livingOnly, setLivingOnly] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const sync = () => setIsMobile(window.innerWidth < 640);
+    sync();
+    window.addEventListener('resize', sync);
+    return () => window.removeEventListener('resize', sync);
+  }, []);
 
   const allSpeakerHabits = useMemo(() => {
     if (talks.length === 0) return [];
@@ -76,7 +109,7 @@ export function HabitsContent() {
   const speakers = useMemo(() => {
     let list = allSpeakerHabits;
     if (livingOnly) {
-      list = list.filter(s => LIVING_SPEAKERS.has(s.speaker));
+      list = list.filter(s => CURRENT_FIRST_PRESIDENCY_AND_TWELVE.has(s.speaker));
     }
     return list;
   }, [allSpeakerHabits, livingOnly]);
@@ -86,7 +119,9 @@ export function HabitsContent() {
   }
 
   const chartData = speakers.slice(0, 25).map(s => ({
-    speaker: s.speaker.length > 18 ? s.speaker.substring(0, 16) + '...' : s.speaker,
+    speaker: isMobile
+      ? compactSpeakerLabel(s.speaker)
+      : (s.speaker.length > 18 ? s.speaker.substring(0, 16) + '...' : s.speaker),
     'Book of Mormon': s.bomPct,
     'D&C': s.dcPct,
     'New Testament': s.ntPct,
@@ -108,20 +143,33 @@ export function HabitsContent() {
           <span className="material-symbols-outlined text-base">{livingOnly ? 'person' : 'groups'}</span>
           {livingOnly ? 'Living Only' : 'All Speakers'}
         </button>
-        <span className="text-xs text-[#524534]">{speakers.length} speakers</span>
+        <span className="text-xs text-[#524534]">
+          {speakers.length} speakers
+          {livingOnly ? ' (First Presidency + Twelve)' : ''}
+        </span>
       </div>
 
       {/* Stacked Bar Chart */}
       <div className="bg-white p-4 md:p-6 lg:p-8 rounded-xl shadow-[0px_12px_32px_rgba(27,94,123,0.06)] mb-6 md:mb-10">
         <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-[#1B5E7B]/60 mb-4">Scripture Volume Breakdown by Speaker (%)</h3>
         {chartData.length > 0 ? (
-          <ResponsiveContainer width="100%" height={Math.max(400, chartData.length * 28)}>
-            <BarChart data={chartData} layout="vertical" margin={{ left: 20 }}>
+          <ResponsiveContainer width="100%" height={Math.max(360, chartData.length * (isMobile ? 24 : 28))}>
+            <BarChart data={chartData} layout="vertical" margin={isMobile ? { left: 0, right: 4, top: 4, bottom: 0 } : { left: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#ece8d9" />
-              <XAxis type="number" unit="%" />
-              <YAxis type="category" dataKey="speaker" width={140} tick={{ fontSize: 11 }} />
-              <Tooltip />
-              <Legend />
+              <XAxis type="number" unit="%" domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} />
+              <YAxis type="category" dataKey="speaker" interval={0} width={isMobile ? 86 : 140} tick={{ fontSize: isMobile ? 10 : 11 }} />
+              <Tooltip
+                allowEscapeViewBox={{ x: true, y: true }}
+                reverseDirection={{ x: true, y: false }}
+                offset={12}
+                wrapperStyle={{ zIndex: 30 }}
+                contentStyle={{
+                  borderRadius: 10,
+                  border: '1px solid #ece8d9',
+                  boxShadow: '0 8px 24px rgba(27,94,123,0.12)',
+                }}
+              />
+              <Legend wrapperStyle={{ fontSize: isMobile ? 10 : 12 }} />
               <Bar dataKey="Book of Mormon" stackId="a" fill="#3b82f6" />
               <Bar dataKey="D&C" stackId="a" fill="#6366f1" />
               <Bar dataKey="New Testament" stackId="a" fill="#ef4444" />

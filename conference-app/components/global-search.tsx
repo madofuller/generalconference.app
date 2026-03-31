@@ -30,7 +30,7 @@ const PAGES = [
   { name: 'Longest Serving', href: '/speakers?tab=service', section: 'People', icon: 'timeline', keywords: 'longest serving years service' },
   { name: 'Paths of Service', href: '/speakers?tab=careers', section: 'People', icon: 'moving', keywords: 'careers callings service paths timeline' },
   { name: 'Who Speaks Alike', href: '/speakers?tab=similarity', section: 'People', icon: 'compare_arrows', keywords: 'similarity compare speakers alike' },
-  { name: 'Speaker Fingerprint', href: '/speakers?tab=fingerprint', section: 'People', icon: 'fingerprint', keywords: 'vocabulary unique words speaker style fingerprint' },
+  { name: 'Talk DNA', href: '/insights/talk-dna', section: 'People', icon: 'fingerprint', keywords: 'vocabulary unique words speaker style fingerprint dna radar' },
   { name: 'Scripture Insights', href: '/scripture-insights', section: 'Insights', icon: 'menu_book', keywords: 'scripture references cited habits influence' },
   { name: 'Name of Christ', href: '/insights/christ', section: 'Insights', icon: 'favorite', keywords: 'jesus christ name mentions tracker' },
   { name: 'Language Evolution', href: '/insights/language', section: 'Insights', icon: 'translate', keywords: 'language phrases evolution rising falling words' },
@@ -45,7 +45,7 @@ const PAGES = [
   { name: 'Emotional Arc', href: '/insights/emotional-arc', section: 'Discoveries', icon: 'show_chart', keywords: 'emotional arc flow conference weekend feelings' },
   { name: 'Doctrinal Pendulum', href: '/insights/doctrinal-pendulum', section: 'Discoveries', icon: 'balance', keywords: 'doctrinal pendulum justice mercy agency obedience tension' },
   { name: 'Lost & Found', href: '/insights/silence', section: 'Discoveries', icon: 'swap_horiz', keywords: 'lost found vanished risen phrases disappeared emerged language' },
-  { name: 'Talk DNA', href: '/insights/talk-dna', section: 'Discoveries', icon: 'fingerprint', keywords: 'dna fingerprint radar chart speaker dimensions' },
+
   { name: 'The Calling Effect', href: '/insights/calling-effect', section: 'Discoveries', icon: 'swap_vert', keywords: 'calling effect apostle transition change before after' },
   { name: 'Thematic Shifts', href: '/insights/repetition', section: 'Discoveries', icon: 'swap_horiz', keywords: 'thematic shifts themes rising falling emphasis change pivot' },
   { name: 'Conference Wordle', href: '/games/wordle', section: 'Games', icon: 'grid_on', keywords: 'wordle word daily guess' },

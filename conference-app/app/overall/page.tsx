@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Navigation, TopAppBar } from '@/components/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useFilteredTalks } from '@/lib/filter-context';
 import { getTalksByEra } from '@/lib/data-loader';
 import { ERAS } from '@/lib/types';
-import { countScriptureReferences } from '@/lib/search-utils';
+import { loadInsights, ScriptureData } from '@/lib/insights';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import Link from 'next/link';
 import { DataCitation } from '@/components/data-citation';
@@ -20,10 +20,113 @@ interface HistoricalCount {
 
 const COLORS = ['#1B5E7B', '#8455ef', '#40c2fd', '#f5a623', '#00668a'];
 
+const EXPORT_DATASETS = [
+  {
+    name: 'Conference Talks (metadata)',
+    description: 'Speaker, title, year, calling, topics, emotions — no full text',
+    href: '/conference_talks_cleaned_index.csv',
+    size: '4.3 MB',
+    icon: 'description',
+  },
+  {
+    name: 'Conference Talks (full text)',
+    description: 'Complete talk text and footnotes for all modern talks',
+    href: '/conference_talks_cleaned.csv',
+    size: '44.7 MB',
+    icon: 'article',
+  },
+  {
+    name: 'Historical Talks (pre-1971)',
+    description: 'Speaker, title, and metadata for historical conference talks',
+    href: '/historical_talks_index.csv',
+    size: '1.9 MB',
+    icon: 'history_edu',
+  },
+  {
+    name: 'Analytics & Insights',
+    description: 'Pre-computed scripture stats, speaker data, language trends, and more',
+    href: '/insights.json',
+    size: '3.1 MB',
+    icon: 'analytics',
+  },
+  {
+    name: 'Temple Data',
+    description: 'Temple locations, status, details, and dedication info',
+    href: '/temples1.csv',
+    size: '0.1 MB',
+    icon: 'temple_buddhist',
+  },
+];
+
+function ExportDataButton() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [open]);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="bg-[#f8f4e4] text-[#1B5E7B] px-6 sm:px-8 py-4 rounded-full font-bold text-sm hover:bg-[#f2eede] transition-all active:scale-95 flex items-center justify-center gap-2"
+      >
+        <span className="material-symbols-outlined text-lg">download</span>
+        Export Data
+        <span className="material-symbols-outlined text-sm transition-transform" style={{ transform: open ? 'rotate(180deg)' : undefined }}>expand_more</span>
+      </button>
+
+      {open && (
+        <>
+          <div className="sm:hidden fixed inset-0 bg-black/30 z-40" onClick={() => setOpen(false)} />
+          <div className="fixed inset-x-3 bottom-20 sm:absolute sm:inset-auto sm:right-0 sm:bottom-full sm:mb-2 sm:w-[400px] bg-white rounded-2xl shadow-[0px_16px_48px_rgba(27,94,123,0.18)] border border-[#e8e0cc] z-50 overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[#f2eede]">
+              <div>
+                <p className="text-sm font-bold text-[#1c1c13]">Download Datasets</p>
+                <p className="text-[11px] text-[#1c1c13]/50 mt-0.5">All data used in this app, free to download</p>
+              </div>
+              <button onClick={() => setOpen(false)} className="sm:hidden p-1.5 rounded-full hover:bg-[#f5a623]/10">
+                <span className="material-symbols-outlined text-[#1c1c13]/40 text-xl">close</span>
+              </button>
+            </div>
+            <div className="max-h-[50vh] sm:max-h-[360px] overflow-y-auto">
+              {EXPORT_DATASETS.map(ds => (
+                <a
+                  key={ds.href}
+                  href={ds.href}
+                  download
+                  onClick={() => setOpen(false)}
+                  className="flex items-start gap-3 px-5 py-3.5 hover:bg-[#fdf9e9] transition-colors border-b border-[#f8f4e4] last:border-b-0"
+                >
+                  <div className="w-9 h-9 rounded-lg bg-[#1B5E7B]/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="material-symbols-outlined text-[#1B5E7B] text-lg">{ds.icon}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-[#1c1c13]">{ds.name}</p>
+                    <p className="text-[11px] text-[#1c1c13]/50 leading-snug mt-0.5">{ds.description}</p>
+                  </div>
+                  <span className="text-[10px] font-bold text-[#1c1c13]/30 uppercase tracking-wider shrink-0 mt-1">{ds.size}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function OverallPage() {
   const { talks, loading } = useFilteredTalks();
   const [selectedEra, setSelectedEra] = useState<string>('all');
   const [historicalCounts, setHistoricalCounts] = useState<HistoricalCount[]>([]);
+  const [scriptureData, setScriptureData] = useState<ScriptureData | null>(null);
 
   useEffect(() => {
     fetch('/general_counts.txt')
@@ -44,7 +147,37 @@ export default function OverallPage() {
         setHistoricalCounts(parsed);
       })
       .catch(() => {});
+
+    loadInsights().then(data => {
+      setScriptureData(data.scriptures);
+    }).catch(() => {});
   }, []);
+
+  // Override historical counts with accurate modern data for overlapping decades
+  const mergedHistoricalCounts = useMemo(() => {
+    if (historicalCounts.length === 0 || talks.length === 0) return historicalCounts;
+
+    const modernDecadeCounts = new Map<string, number>();
+    talks.forEach(talk => {
+      const decade = `${Math.floor(talk.year / 10) * 10}s`;
+      modernDecadeCounts.set(decade, (modernDecadeCounts.get(decade) || 0) + 1);
+    });
+
+    return historicalCounts.map(entry => {
+      const modernCount = modernDecadeCounts.get(entry.decade);
+      if (modernCount && modernCount > entry.talks) {
+        const avgWords = entry.avgWordsPerTalk > 0 ? entry.avgWordsPerTalk : 1650;
+        const estimatedWords = modernCount * avgWords;
+        return {
+          ...entry,
+          talks: modernCount,
+          words: estimatedWords,
+          avgWordsPerTalk: avgWords,
+        };
+      }
+      return entry;
+    });
+  }, [historicalCounts, talks]);
 
   const filteredTalks = useMemo(() => {
     if (selectedEra === 'all') {
@@ -57,7 +190,10 @@ export default function OverallPage() {
     const totalTalks = filteredTalks.length;
     const uniqueSpeakers = new Set(filteredTalks.map(t => t.speaker)).size;
     const totalConferences = new Set(filteredTalks.map(t => `${t.season} ${t.year}`)).size;
-    const totalScriptureRefs = filteredTalks.reduce((sum, talk) => sum + countScriptureReferences(talk), 0);
+
+    const totalScriptureRefs = scriptureData
+      ? scriptureData.byVolume.reduce((sum, v) => sum + v.references, 0)
+      : 0;
     const avgRefsPerTalk = totalTalks > 0 ? (totalScriptureRefs / totalTalks).toFixed(1) : '0';
 
     const years = filteredTalks.map(t => t.year);
@@ -91,13 +227,9 @@ export default function OverallPage() {
     const talksByEra = Array.from(eraCounts.entries())
       .map(([era, count]) => ({ era, count }));
 
-    const volumeData = [
-      { name: 'Book of Mormon', value: Math.round(totalScriptureRefs * 0.3) },
-      { name: 'Doctrine and Covenants', value: Math.round(totalScriptureRefs * 0.2) },
-      { name: 'New Testament', value: Math.round(totalScriptureRefs * 0.25) },
-      { name: 'Old Testament', value: Math.round(totalScriptureRefs * 0.15) },
-      { name: 'Pearl of Great Price', value: Math.round(totalScriptureRefs * 0.1) },
-    ];
+    const volumeData = scriptureData
+      ? scriptureData.byVolume.map(v => ({ name: v.volume, value: v.references }))
+      : [];
 
     const decadeMap = new Map<number, number>();
     filteredTalks.forEach(talk => {
@@ -111,7 +243,7 @@ export default function OverallPage() {
     const donutTotal = talksByEra.reduce((s, e) => s + e.count, 0);
 
     return { totalTalks, uniqueSpeakers, totalConferences, totalScriptureRefs, avgRefsPerTalk, minYear, maxYear, topSpeakers, talksByYear, talksByEra, volumeData, decades, donutTotal };
-  }, [filteredTalks]);
+  }, [filteredTalks, scriptureData]);
 
   const { totalTalks, uniqueSpeakers, totalConferences, totalScriptureRefs, avgRefsPerTalk, minYear, maxYear, topSpeakers, talksByYear, talksByEra, volumeData, decades, donutTotal } = stats;
 
@@ -152,7 +284,7 @@ export default function OverallPage() {
               </SelectTrigger>
               <SelectContent className="bg-white border-0 shadow-[0px_12px_32px_rgba(27,94,123,0.12)] rounded-xl">
                 <SelectItem value="all">All Eras</SelectItem>
-                {ERAS.map(era => (
+                {ERAS.filter(era => (era.end === null || era.end >= 1971)).map(era => (
                   <SelectItem key={era.name} value={era.name}>
                     {era.name} Era ({era.start}-{era.end || 'present'})
                   </SelectItem>
@@ -338,10 +470,10 @@ export default function OverallPage() {
 
           {/* Talks Over Time */}
           <div className="bg-white rounded-xl shadow-[0px_12px_32px_rgba(27,94,123,0.08)] p-4 md:p-6 lg:p-8">
-            <div className="flex items-center gap-3 mb-6">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-6">
               <span className="material-symbols-outlined text-[#1B5E7B] text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>timeline</span>
               <h2 className="text-xl font-bold text-[#1c1c13]">Talks Over Time</h2>
-              <span className="text-sm text-[#524534]/60 ml-2">Number of talks per year</span>
+              <span className="text-xs sm:text-sm text-[#524534]/60">per year</span>
             </div>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={talksByYear}>
@@ -404,10 +536,10 @@ export default function OverallPage() {
 
           {/* Top 20 Speakers Full Table */}
           <div className="bg-white rounded-xl shadow-[0px_12px_32px_rgba(27,94,123,0.08)] p-4 md:p-6 lg:p-8">
-            <div className="flex items-center gap-3 mb-6">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-6">
               <span className="material-symbols-outlined text-[#1B5E7B] text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>group</span>
               <h2 className="text-xl font-bold text-[#1c1c13]">Top 20 Speakers</h2>
-              <span className="text-sm text-[#524534]/60 ml-2">By total talk count</span>
+              <span className="text-xs sm:text-sm text-[#524534]/60">By total talk count</span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
               {topSpeakers.map((stat, idx) => (
@@ -433,7 +565,7 @@ export default function OverallPage() {
           </div>
 
           {/* Historical Conference Counts (from general_counts.txt) */}
-          {historicalCounts.length > 0 && (
+          {mergedHistoricalCounts.length > 0 && (
             <div className="bg-white rounded-xl shadow-[0px_12px_32px_rgba(27,94,123,0.08)] p-4 md:p-6 lg:p-8">
               <div className="flex items-center gap-3 mb-2">
                 <span className="material-symbols-outlined text-[#1B5E7B] text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>library_books</span>
@@ -447,7 +579,7 @@ export default function OverallPage() {
                   <h3 className="text-sm font-bold text-[#1c1c13] mb-3">Talks Per Decade</h3>
                   <div className="h-[280px]">
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={historicalCounts}>
+                      <BarChart data={mergedHistoricalCounts}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" />
                         <XAxis dataKey="decade" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={50} />
                         <YAxis tick={{ fontSize: 11 }} />
@@ -466,7 +598,7 @@ export default function OverallPage() {
                   <h3 className="text-sm font-bold text-[#1c1c13] mb-3">Average Words Per Talk</h3>
                   <div className="h-[280px]">
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={historicalCounts}>
+                      <BarChart data={mergedHistoricalCounts}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" />
                         <XAxis dataKey="decade" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={50} />
                         <YAxis tick={{ fontSize: 11 }} />
@@ -482,46 +614,46 @@ export default function OverallPage() {
               </div>
 
               {/* Summary row */}
-              <div className="grid grid-cols-3 gap-4">
-                <div className="bg-[#fdf9e9] p-4 rounded-lg text-center">
-                  <p className="text-xl font-extrabold text-[#1c1c13]">{historicalCounts.reduce((s, r) => s + r.talks, 0).toLocaleString()}</p>
-                  <p className="text-[10px] uppercase tracking-wider text-[#1c1c13]/40 font-bold mt-1">Total Talks (All Time)</p>
+              <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                <div className="bg-[#fdf9e9] p-3 sm:p-4 rounded-lg text-center">
+                  <p className="text-base sm:text-xl font-extrabold text-[#1c1c13]">{mergedHistoricalCounts.reduce((s, r) => s + r.talks, 0).toLocaleString()}</p>
+                  <p className="text-[8px] sm:text-[10px] uppercase tracking-wider text-[#1c1c13]/40 font-bold mt-1">All-Time Talks</p>
                 </div>
-                <div className="bg-[#fdf9e9] p-4 rounded-lg text-center">
-                  <p className="text-xl font-extrabold text-[#1c1c13]">{(historicalCounts.reduce((s, r) => s + r.words, 0) / 1000000).toFixed(1)}M</p>
-                  <p className="text-[10px] uppercase tracking-wider text-[#1c1c13]/40 font-bold mt-1">Total Words Spoken</p>
+                <div className="bg-[#fdf9e9] p-3 sm:p-4 rounded-lg text-center">
+                  <p className="text-base sm:text-xl font-extrabold text-[#1c1c13]">{(mergedHistoricalCounts.reduce((s, r) => s + r.words, 0) / 1000000).toFixed(1)}M</p>
+                  <p className="text-[8px] sm:text-[10px] uppercase tracking-wider text-[#1c1c13]/40 font-bold mt-1">Words Spoken</p>
                 </div>
-                <div className="bg-[#fdf9e9] p-4 rounded-lg text-center">
-                  <p className="text-xl font-extrabold text-[#1c1c13]">{historicalCounts.length}</p>
-                  <p className="text-[10px] uppercase tracking-wider text-[#1c1c13]/40 font-bold mt-1">Decades of Data</p>
+                <div className="bg-[#fdf9e9] p-3 sm:p-4 rounded-lg text-center">
+                  <p className="text-base sm:text-xl font-extrabold text-[#1c1c13]">{mergedHistoricalCounts.length}</p>
+                  <p className="text-[8px] sm:text-[10px] uppercase tracking-wider text-[#1c1c13]/40 font-bold mt-1">Decades</p>
                 </div>
               </div>
 
-              <DataCitation datasets="Historical conference talk and word counts" />
+              <DataCitation datasets="Pre-1971 conference talk and word counts" />
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-[#1B5E7B]/5 border border-[#1B5E7B]/10 mt-3">
+                <span className="material-symbols-outlined text-[#1B5E7B]/40 text-lg mt-0.5 shrink-0">update</span>
+                <p className="text-[11px] text-[#1c1c13]/50 leading-relaxed">
+                  Recent decades are supplemented with talk counts from our modern conference dataset to ensure accuracy.
+                </p>
+              </div>
             </div>
           )}
 
           {/* CTA Footer */}
-          <div className="bg-white rounded-xl shadow-[0px_12px_32px_rgba(27,94,123,0.08)] p-5 md:p-8 lg:p-10 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="bg-white rounded-xl shadow-[0px_12px_32px_rgba(27,94,123,0.08)] p-5 md:p-8 lg:p-10 flex flex-col items-center text-center md:text-left md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h3 className="text-2xl font-bold text-[#1c1c13] mb-2">Ready to explore further?</h3>
-              <p className="text-[#524534]">Dive deeper into topics, speakers, and trends.</p>
+              <h3 className="text-xl sm:text-2xl font-bold text-[#1c1c13] mb-1 sm:mb-2">Ready to explore further?</h3>
+              <p className="text-sm sm:text-base text-[#524534]">Dive deeper into topics, speakers, and trends.</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
               <Link
                 href="/search"
-                className="bg-[#1B5E7B] text-white px-6 sm:px-8 py-4 rounded-full font-bold text-sm shadow-[0px_8px_24px_rgba(27,94,123,0.2)] hover:shadow-[0px_12px_32px_rgba(245,166,35,0.4)] transition-all active:scale-95 flex items-center justify-center gap-2"
+                className="bg-[#1B5E7B] text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full font-bold text-sm shadow-[0px_8px_24px_rgba(27,94,123,0.2)] hover:shadow-[0px_12px_32px_rgba(245,166,35,0.4)] transition-all active:scale-95 flex items-center justify-center gap-2"
               >
                 <span className="material-symbols-outlined text-lg">search</span>
                 Search Talks
               </Link>
-              <button
-                onClick={() => window.print()}
-                className="bg-[#f8f4e4] text-[#1B5E7B] px-6 sm:px-8 py-4 rounded-full font-bold text-sm hover:bg-[#f2eede] transition-all active:scale-95 flex items-center justify-center gap-2"
-              >
-                <span className="material-symbols-outlined text-lg">download</span>
-                Export Insights Report
-              </button>
+              <ExportDataButton />
             </div>
           </div>
 

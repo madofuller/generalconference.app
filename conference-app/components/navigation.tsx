@@ -190,13 +190,13 @@ export function Navigation() {
         <NavContent pathname={pathname} onNavigate={() => setMobileOpen(false)} />
       </aside>
 
-      {/* Mobile top bar: hamburger + centered branding */}
+      {/* Mobile top bar: anchored hamburger + centered branding */}
       <div
-        className="lg:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-center h-20 pt-4 bg-[#fdf9e9]/90 backdrop-blur-md"
+        className="lg:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-center h-20 pt-4 bg-[#fdf9e9]/95 backdrop-blur-md border-b border-[#d7c3ae]/20"
         style={{ display: mobileOpen ? 'none' : undefined }}
       >
         <button
-          className="absolute left-4 w-11 h-11 rounded-full bg-[#fdf9e9] shadow-md flex items-center justify-center text-[#1B5E7B] active:bg-[#f5a623]/20 transition-colors z-50"
+          className="absolute left-2 top-1/2 -translate-y-1/2 w-12 h-12 rounded-md flex items-center justify-center text-[#1B5E7B] hover:bg-[#f5a623]/10 active:bg-[#f5a623]/20 transition-colors z-50"
           onClick={() => setMobileOpen(true)}
           aria-label="Open navigation menu"
         >
@@ -270,30 +270,39 @@ export function TopAppBar({ title, subtitle, hideEraToggle = false, scrollsAway 
   const { dataEra } = useFilters();
 
   return (
-    <header className={`hidden lg:block ${scrollsAway ? 'lg:sticky lg:top-0' : 'lg:sticky lg:top-0'} w-full z-30 bg-[#fdf9e9] backdrop-blur-xl px-4 py-4 md:px-8 md:py-4 border-b border-[#d7c3ae]/10`}>
-      <div className="flex justify-between items-center gap-4">
-        <div className="min-w-0">
-          <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-[#1c1c13] tracking-tight leading-tight">{title}</h1>
-          {subtitle && (
-            <p className="text-xs md:text-sm font-medium text-[#1c1c13]/60 hidden sm:block">{subtitle}</p>
+    <>
+      <header className="lg:hidden w-full px-4 pt-3 pb-3 border-b border-[#d7c3ae]/10">
+        <h1 className="text-lg font-bold text-[#1c1c13] tracking-tight leading-tight">{title}</h1>
+        {subtitle && (
+          <p className="text-xs font-medium text-[#1c1c13]/60 mt-1">{subtitle}</p>
+        )}
+      </header>
+
+      <header className={`hidden lg:block ${scrollsAway ? 'lg:sticky lg:top-0' : 'lg:sticky lg:top-0'} w-full z-30 bg-[#fdf9e9] backdrop-blur-xl px-4 py-4 md:px-8 md:py-4 border-b border-[#d7c3ae]/10`}>
+        <div className="flex justify-between items-center gap-4">
+          <div className="min-w-0">
+            <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-[#1c1c13] tracking-tight leading-tight">{title}</h1>
+            {subtitle && (
+              <p className="text-xs md:text-sm font-medium text-[#1c1c13]/60 hidden sm:block">{subtitle}</p>
+            )}
+          </div>
+          {!hideEraToggle && (
+            <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
+              <DataEraToggle />
+            </div>
           )}
         </div>
-        {!hideEraToggle && (
-          <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
-            <DataEraToggle />
+        {dataEra !== 'modern' && (
+          <div className="mt-2 flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
+            <MaterialIcon name="info" className="text-amber-600 text-base flex-shrink-0" />
+            <p className="text-[10px] md:text-xs text-amber-800">
+              {dataEra === 'historical'
+                ? 'Showing pre-1971 data from the Journal of Discourses (1839–1886) and historical conference reports (1880–1970). Older texts may contain OCR errors.'
+                : 'Includes pre-1971 data from the Journal of Discourses and historical conference reports. Older texts may contain OCR errors.'}
+            </p>
           </div>
         )}
-      </div>
-      {dataEra !== 'modern' && (
-        <div className="mt-2 flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
-          <MaterialIcon name="info" className="text-amber-600 text-base flex-shrink-0" />
-          <p className="text-[10px] md:text-xs text-amber-800">
-            {dataEra === 'historical'
-              ? 'Showing pre-1971 data from the Journal of Discourses (1839–1886) and historical conference reports (1880–1970). Older texts may contain OCR errors.'
-              : 'Includes pre-1971 data from the Journal of Discourses and historical conference reports. Older texts may contain OCR errors.'}
-          </p>
-        </div>
-      )}
-    </header>
+      </header>
+    </>
   );
 }

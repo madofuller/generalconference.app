@@ -22,7 +22,8 @@ export function FiltersContent() {
   const [selectedSpeakers, setSelectedSpeakers] = useState<string[]>(filters.speakers || []);
   const [selectedConference, setSelectedConference] = useState<string>(filters.conference || '');
   const [selectedEra, setSelectedEra] = useState<string>(filters.era || '');
-  const [yearRange, setYearRange] = useState<[number, number]>(filters.yearRange || [1971, 2025]);
+  const currentYear = new Date().getFullYear();
+  const [yearRange, setYearRange] = useState<[number, number]>(filters.yearRange || [1971, currentYear]);
 
   const conferences = useMemo(() => getConferences(talks).map(c => c.label), [talks]);
   const speakers = useMemo(() => getSpeakers(talks), [talks]);
@@ -55,7 +56,7 @@ export function FiltersContent() {
     setSelectedSpeakers([]);
     setSelectedConference('');
     setSelectedEra('');
-    setYearRange([1971, 2025]);
+    setYearRange([1971, currentYear]);
   };
 
   const toggleSpeaker = (speaker: string) => {
@@ -246,7 +247,7 @@ export function FiltersContent() {
               <Label>Year Range: {yearRange[0]} - {yearRange[1]}</Label>
               <Slider
                 min={1971}
-                max={2025}
+                max={currentYear}
                 step={1}
                 value={yearRange}
                 onValueChange={(value) => setYearRange(value as [number, number])}

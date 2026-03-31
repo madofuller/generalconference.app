@@ -81,7 +81,7 @@ export default function BingoPage() {
       <main className="ml-0 lg:ml-[260px] min-h-screen flex-1 pt-20 lg:pt-0">
         <TopAppBar title="Conference Bingo" subtitle="Play along with the spirit of the session" />
 
-        <div className="px-4 md:px-8 lg:px-12 pb-12 md:pb-24 max-w-4xl mx-auto">
+        <div className="px-2 sm:px-4 md:px-8 lg:px-12 pb-12 md:pb-24 max-w-4xl mx-auto">
           {/* Win Banner */}
           {hasWon && (
             <div className="mb-4 md:mb-8 p-4 md:p-6 rounded-xl watercolor-gradient text-white text-center">
@@ -139,7 +139,7 @@ export default function BingoPage() {
               </div>
 
               {/* Bingo Grid */}
-              <div className="grid grid-cols-5 gap-1 md:gap-2">
+              <div className="grid grid-cols-5 gap-1.5 md:gap-2">
                 {card.items.map((row, ri) =>
                   row.map((item, ci) => {
                     const isFreeSpace = ri === 2 && ci === 2;
@@ -148,7 +148,7 @@ export default function BingoPage() {
                         key={`${ri}-${ci}`}
                         onClick={() => toggleItem(ri, ci)}
                         className={`
-                          aspect-square p-1.5 md:p-3 rounded-lg md:rounded-xl text-[10px] md:text-xs font-bold
+                          aspect-square min-h-[70px] sm:min-h-[84px] p-1.5 sm:p-2 md:p-3 rounded-lg md:rounded-xl text-[10px] sm:text-[11px] md:text-xs font-bold
                           flex flex-col items-center justify-center text-center
                           transition-all duration-200
                           ${item.marked || isFreeSpace
@@ -164,10 +164,10 @@ export default function BingoPage() {
                           </>
                         ) : (
                           <>
-                            <span className={`text-[8px] uppercase tracking-wider mb-1 ${item.marked ? 'text-white/70' : 'text-[#1B5E7B]/60'}`}>
+                            <span className={`hidden sm:block text-[8px] uppercase tracking-wider mb-1 ${item.marked ? 'text-white/70' : 'text-[#1B5E7B]/60'}`}>
                               {CATEGORY_LABEL[item.category]}
                             </span>
-                            <span className="leading-tight text-[11px]">
+                            <span className="leading-tight text-[11px] sm:text-xs line-clamp-4">
                               {item.category === 'phrase' ? `"${item.text}"` : item.text}
                             </span>
                             {item.marked && (

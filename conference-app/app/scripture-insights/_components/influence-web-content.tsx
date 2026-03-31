@@ -2,109 +2,21 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { useFilteredFullTalks } from '@/lib/filter-context';
-import { Talk } from '@/lib/types';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
 
 interface CitationEdge { source: string; target: string; count: number }
 interface SpeakerCitationStats { speaker: string; citedByCount: number; citesCount: number; totalIncoming: number; totalOutgoing: number }
+type GraphResult = { edges: CitationEdge[]; stats: SpeakerCitationStats[]; speakers: string[] };
 
-// Last names too common/ambiguous for "Elder/President LastName" matching
-const AMBIGUOUS_LASTNAMES = new Set([
-  'young', 'smith', 'johnson', 'brown', 'cook', 'taylor', 'nelson',
-  'snow', 'clark', 'lee', 'turner', 'martin', 'king', 'wright',
-  'hill', 'green', 'stone', 'long', 'day', 'may', 'rich', 'child',
-  'wells', 'grant', 'page', 'hyde', 'mark', 'luke', 'james',
-]);
+let cached: GraphResult | null = null;
 
-function buildCitationGraph(talks: Talk[], minTalks: number = 1) {
-  const speakerTalkCount = new Map<string, number>();
-  talks.forEach(t => speakerTalkCount.set(t.speaker, (speakerTalkCount.get(t.speaker) || 0) + 1));
-
-  const speakers = Array.from(speakerTalkCount.entries())
-    .filter(([, count]) => count >= minTalks)
-    .map(([name]) => name);
-
-  const speakerPatterns = speakers.map(s => {
-    const parts = s.split(' ');
-    const lastName = parts[parts.length - 1].toLowerCase();
-    const isAmbiguous = AMBIGUOUS_LASTNAMES.has(lastName);
-    const fullName = s.toLowerCase();
-
-    const patterns: string[] = [fullName];
-
-    if (isAmbiguous) {
-      // For ambiguous names, require more specificity
-      if (parts.length >= 2) {
-        patterns.push(`${parts[0].toLowerCase()} ${lastName}`);
-      }
-      // Use first+middle+last or two-word combos with title
-      if (parts.length >= 3) {
-        const twoWordId = `${parts[parts.length - 2].toLowerCase()} ${lastName}`;
-        patterns.push(`president ${twoWordId}`);
-        patterns.push(`elder ${twoWordId}`);
-        patterns.push(`sister ${twoWordId}`);
-      }
-    } else {
-      // Unambiguous last names are safe with titles
-      patterns.push(`president ${lastName}`);
-      patterns.push(`elder ${lastName}`);
-      patterns.push(`sister ${lastName}`);
-      patterns.push(`bishop ${lastName}`);
-      patterns.push(`brother ${lastName}`);
-    }
-
-    return { name: s, patterns };
-  });
-
-  const edges = new Map<string, number>();
-
-  talks.forEach(talk => {
-    const text = (talk.talk || '').toLowerCase();
-    if (!text || text.length < 50) return;
-
-    speakerPatterns.forEach(({ name, patterns }) => {
-      if (name === talk.speaker) return;
-      for (const pattern of patterns) {
-        const idx = text.indexOf(pattern);
-        if (idx !== -1) {
-          // Word boundary check
-          const before = idx > 0 ? text[idx - 1] : ' ';
-          const after = idx + pattern.length < text.length ? text[idx + pattern.length] : ' ';
-          if (/[\s,.:;"'(\u201c\u201d]/.test(before) && /[\s,.:;"')\u201c\u201d?!]/.test(after)) {
-            const key = `${talk.speaker}|||${name}`;
-            edges.set(key, (edges.get(key) || 0) + 1);
-            break;
-          }
-        }
-      }
-    });
-  });
-
-  const edgeList: CitationEdge[] = Array.from(edges.entries())
-    .map(([key, count]) => {
-      const [source, target] = key.split('|||');
-      return { source, target, count };
-    })
-    .sort((a, b) => b.count - a.count);
-
-  const stats = new Map<string, SpeakerCitationStats>();
-  const initStats = (s: string) => {
-    if (!stats.has(s)) stats.set(s, { speaker: s, citedByCount: 0, citesCount: 0, totalIncoming: 0, totalOutgoing: 0 });
-  };
-
-  edgeList.forEach(e => {
-    initStats(e.source);
-    initStats(e.target);
-    stats.get(e.source)!.citesCount++;
-    stats.get(e.source)!.totalOutgoing += e.count;
-    stats.get(e.target)!.citedByCount++;
-    stats.get(e.target)!.totalIncoming += e.count;
-  });
-
-  return { edges: edgeList, stats: Array.from(stats.values()), speakers };
+async function loadCitationGraph(): Promise<GraphResult> {
+  if (cached) return cached;
+  const res = await fetch('/citation_graph.json');
+  cached = await res.json();
+  return cached!;
 }
 
 function SpeakerSearch({ speakers, value, onChange }: { speakers: string[]; value: string; onChange: (v: string) => void }) {
@@ -167,28 +79,43 @@ function SpeakerSearch({ speakers, value, onChange }: { speakers: string[]; valu
   );
 }
 
+function useIsMobile(breakpoint = 640) {
+  const [mobile, setMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${breakpoint}px)`);
+    setMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, [breakpoint]);
+  return mobile;
+}
+
+function compactName(name: string) {
+  const parts = name.split(' ');
+  if (parts.length <= 2) return name;
+  return `${parts[0][0]}. ${parts.slice(1).join(' ')}`;
+}
+
 export function InfluenceWebContent() {
-  const { talks, loading } = useFilteredFullTalks();
-  const [computing, setComputing] = useState(false);
   const [selectedSpeaker, setSelectedSpeaker] = useState('');
-  const [graph, setGraph] = useState<ReturnType<typeof buildCitationGraph> | null>(null);
+  const [graph, setGraph] = useState<GraphResult | null>(null);
+  const [loading, setLoading] = useState(true);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
-    if (talks.length === 0) return;
-    setComputing(true);
-    setTimeout(() => {
-      setGraph(buildCitationGraph(talks));
-      setComputing(false);
-    }, 100);
-  }, [talks]);
+    loadCitationGraph().then(data => {
+      setGraph(data);
+      setLoading(false);
+    });
+  }, []);
 
-  if (loading || computing || !graph) {
+  if (loading || !graph) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
           <div className="w-10 h-10 rounded-full border-4 border-[#f5a623] border-t-transparent animate-spin mx-auto mb-3" />
-          <p className="text-[#524534]">{loading ? 'Loading talks...' : 'Building citation network...'}</p>
-          <p className="text-xs text-[#524534]/60 mt-1">Scanning {talks.length.toLocaleString()} talks for speaker references</p>
+          <p className="text-[#524534]">Loading citation network...</p>
         </div>
       </div>
     );
@@ -211,7 +138,7 @@ export function InfluenceWebContent() {
         <CardContent className="pt-6">
           <p className="text-sm md:text-lg font-medium text-violet-900">
             When speakers quote &quot;President Oaks&quot; or &quot;Elder Holland,&quot; they reveal an intellectual lineage.
-            This page maps who references whom across {talks.length.toLocaleString()} conference talks.
+            This page maps who references whom across {graph.speakers.length.toLocaleString()} speakers and {totalCitations.toLocaleString()} references.
           </p>
         </CardContent>
       </Card>
@@ -241,14 +168,21 @@ export function InfluenceWebContent() {
             <CardTitle className="text-base">Most Referenced Speakers</CardTitle>
             <CardDescription>Whose name appears most in others&apos; talks</CardDescription>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={450}>
-              <BarChart data={topCited} layout="vertical">
+          <CardContent className="px-1 sm:px-6">
+            <ResponsiveContainer width="100%" height={isMobile ? 520 : 450}>
+              <BarChart data={topCited} layout="vertical" margin={isMobile ? { left: 0, right: 4, top: 4, bottom: 4 } : undefined}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e0d5" />
-                <XAxis type="number" tick={{ fontSize: 10 }} />
-                <YAxis type="category" dataKey="speaker" width={150} tick={{ fontSize: 9 }} />
+                <XAxis type="number" tick={{ fontSize: isMobile ? 9 : 10 }} />
+                <YAxis
+                  type="category"
+                  dataKey="speaker"
+                  width={isMobile ? 100 : 150}
+                  tick={{ fontSize: isMobile ? 8 : 9 }}
+                  tickFormatter={isMobile ? compactName : undefined}
+                  interval={0}
+                />
                 <Tooltip contentStyle={{ background: '#fdf9e9', border: '1px solid #e5e0d5', borderRadius: 8, fontSize: 12 }} />
-                <Bar dataKey="totalIncoming" fill="#1B5E7B" radius={[0, 4, 4, 0]} name="Times Referenced" />
+                <Bar dataKey="totalIncoming" fill="#1B5E7B" radius={[0, 4, 4, 0]} name="Times Referenced" barSize={isMobile ? 14 : undefined} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -259,14 +193,21 @@ export function InfluenceWebContent() {
             <CardTitle className="text-base">Most Prolific Citers</CardTitle>
             <CardDescription>Who references other speakers most in their talks</CardDescription>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={450}>
-              <BarChart data={topCiters} layout="vertical">
+          <CardContent className="px-1 sm:px-6">
+            <ResponsiveContainer width="100%" height={isMobile ? 520 : 450}>
+              <BarChart data={topCiters} layout="vertical" margin={isMobile ? { left: 0, right: 4, top: 4, bottom: 4 } : undefined}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e0d5" />
-                <XAxis type="number" tick={{ fontSize: 10 }} />
-                <YAxis type="category" dataKey="speaker" width={150} tick={{ fontSize: 9 }} />
+                <XAxis type="number" tick={{ fontSize: isMobile ? 9 : 10 }} />
+                <YAxis
+                  type="category"
+                  dataKey="speaker"
+                  width={isMobile ? 100 : 150}
+                  tick={{ fontSize: isMobile ? 8 : 9 }}
+                  tickFormatter={isMobile ? compactName : undefined}
+                  interval={0}
+                />
                 <Tooltip contentStyle={{ background: '#fdf9e9', border: '1px solid #e5e0d5', borderRadius: 8, fontSize: 12 }} />
-                <Bar dataKey="totalOutgoing" fill="#f5a623" radius={[0, 4, 4, 0]} name="References Made" />
+                <Bar dataKey="totalOutgoing" fill="#f5a623" radius={[0, 4, 4, 0]} name="References Made" barSize={isMobile ? 14 : undefined} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -361,7 +302,7 @@ export function InfluenceWebContent() {
             <strong>Methodology:</strong> References are detected by searching talk text for &quot;President/Elder/Sister [LastName]&quot;
             or full speaker names. Ambiguous last names (Smith, Young, Nelson, etc.) require more context to match —
             we look for first+last name or title+two-word identifier to avoid false positives like &quot;young people&quot; or &quot;elder brother.&quot;
-            All speakers are included.
+            Dataset scope: 1971 onward only.
           </p>
         </CardContent>
       </Card>

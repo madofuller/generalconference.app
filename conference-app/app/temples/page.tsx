@@ -6,6 +6,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import Papa from 'papaparse';
 import TempleMap from '@/components/temple-map';
 import { DataCitation } from '@/components/data-citation';
+import { cn } from '@/lib/utils';
 
 interface Temple {
   number: number;
@@ -186,8 +187,11 @@ export default function TemplesPage() {
               { label: 'Countries', value: stats.countries },
               { label: 'Oldest', value: stats.oldest ? stats.oldest.dedicatedYear : '—' },
               { label: 'Largest', value: stats.largest ? stats.largest.name.replace(' Temple', '').split(/\s/).slice(0, 2).join(' ') : '—' },
-            ].map(stat => (
-              <div key={stat.label} className="bg-white p-4 md:p-6 rounded-xl shadow-[0px_12px_32px_rgba(27,94,123,0.06)] text-center">
+            ].map((stat, i, arr) => (
+              <div key={stat.label} className={cn(
+                "bg-white p-4 md:p-6 rounded-xl shadow-[0px_12px_32px_rgba(27,94,123,0.06)] text-center",
+                i === arr.length - 1 && arr.length % 2 !== 0 && "col-span-2 sm:col-span-1"
+              )}>
                 <p className="text-lg md:text-2xl font-extrabold text-[#1c1c13]">{stat.value}</p>
                 <p className="text-[10px] uppercase tracking-wider text-[#1c1c13]/40 font-bold mt-1">{stat.label}</p>
               </div>

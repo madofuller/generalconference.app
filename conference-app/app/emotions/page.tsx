@@ -300,8 +300,8 @@ export default function EmotionsPage() {
                             data={donutData}
                             cx="50%"
                             cy="50%"
-                            innerRadius={75}
-                            outerRadius={115}
+                            innerRadius="56%"
+                            outerRadius="90%"
                             paddingAngle={2}
                             dataKey="value"
                             stroke="none"
@@ -330,11 +330,11 @@ export default function EmotionsPage() {
                     </div>
 
                     {/* Legend */}
-                    <div className="grid grid-cols-2 gap-x-6 gap-y-2 mt-6">
+                    <div className="grid grid-cols-2 gap-x-3 md:gap-x-6 gap-y-2 mt-5 md:mt-6">
                       {donutData.map(d => (
                         <div key={d.name} className="flex items-center gap-2">
                           <div className="w-3 h-3 rounded-full" style={{ backgroundColor: d.color }} />
-                          <span className="text-xs text-[#1c1c13]/70 capitalize">{d.name}</span>
+                          <span className="text-[11px] md:text-xs text-[#1c1c13]/70 capitalize">{d.name}</span>
                         </div>
                       ))}
                     </div>
@@ -807,13 +807,11 @@ export default function EmotionsPage() {
                             data={categoryCounts}
                             cx="50%"
                             cy="50%"
-                            innerRadius={80}
-                            outerRadius={140}
+                            innerRadius="50%"
+                            outerRadius="88%"
                             paddingAngle={3}
                             dataKey="value"
                             stroke="none"
-                            label={({ name, percent }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`}
-                            labelLine={false}
                           >
                             {categoryCounts.map((entry, index) => (
                               <Cell key={`cell-${index}`} fill={CATEGORY_COLORS[index % CATEGORY_COLORS.length]} />
@@ -823,6 +821,24 @@ export default function EmotionsPage() {
                         </PieChart>
                       </ResponsiveContainer>
                     </div>
+                  </div>
+                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-3 gap-y-2">
+                    {categoryCounts.map((category, index) => {
+                      const percentage = filteredTalks.length > 0
+                        ? (category.value / filteredTalks.length) * 100
+                        : 0;
+                      return (
+                        <div key={category.name} className="flex items-start gap-2 min-w-0">
+                          <span
+                            className="w-2.5 h-2.5 rounded-full shrink-0 mt-1"
+                            style={{ backgroundColor: CATEGORY_COLORS[index % CATEGORY_COLORS.length] }}
+                          />
+                          <span className="text-[11px] md:text-xs text-[#524534]/80 leading-tight break-words">
+                            {category.name}: {category.value.toLocaleString()} ({percentage.toFixed(0)}%)
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </section>

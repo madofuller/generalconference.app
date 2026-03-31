@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { loadInsights, ScriptureData } from '@/lib/insights';
 import { useFilteredTalks } from '@/lib/filter-context';
+import { loadFullTalks } from '@/lib/data-loader';
 import { Talk } from '@/lib/types';
 import {
   BarChart,
@@ -158,24 +159,34 @@ export function MostCitedContent() {
   const [data, setData] = useState<ScriptureData | null>(null);
   const [expandedRef, setExpandedRef] = useState<string | null>(null);
   const [citingTalks, setCitingTalks] = useState<Talk[]>([]);
+  const [loadingSources, setLoadingSources] = useState(false);
+  const fullTalksCache = useRef<Talk[] | null>(null);
 
   useEffect(() => {
     loadInsights().then(i => setData(i.scriptures));
   }, []);
 
-  const handleExpandRef = (reference: string) => {
+  const handleExpandRef = async (reference: string) => {
     if (expandedRef === reference) {
       setExpandedRef(null);
       setCitingTalks([]);
       return;
     }
     setExpandedRef(reference);
+    setCitingTalks([]);
+    setLoadingSources(true);
+
+    if (!fullTalksCache.current) {
+      fullTalksCache.current = await loadFullTalks();
+    }
+
     const pattern = reference.toLowerCase();
-    const results = talks.filter(talk => {
-      const text = `${talk.footnotes} ${talk.talk}`.toLowerCase();
+    const results = fullTalksCache.current.filter(talk => {
+      const text = `${talk.footnotes || ''} ${talk.talk || ''}`.toLowerCase();
       return text.includes(pattern);
     });
     setCitingTalks(results);
+    setLoadingSources(false);
   };
 
   if (!data) {
@@ -320,11 +331,18 @@ export function MostCitedContent() {
                   </div>
                   {isExpanded && (
                     <div className="mb-3 ml-0 mr-0 mt-1 rounded-lg border bg-muted/30 p-3 sm:ml-12 sm:mr-2 sm:p-4">
+                      {loadingSources ? (
+                        <div className="flex items-center gap-2 py-2">
+                          <div className="w-4 h-4 rounded-full border-2 border-[#1B5E7B] border-t-transparent animate-spin" />
+                          <p className="text-sm text-[#524534]">Loading full talk text to search...</p>
+                        </div>
+                      ) : (
+                      <>
                       <p className="text-sm font-medium mb-3">
                         {citingTalks.length} talk{citingTalks.length !== 1 ? 's' : ''} referencing {ref.reference}:
                       </p>
                       {citingTalks.length === 0 ? (
-                        <p className="text-sm text-[#524534]">Loading or no matches found...</p>
+                        <p className="text-sm text-[#524534]">No matches found in talk text or footnotes.</p>
                       ) : (
                         <div className="space-y-1.5 max-h-[400px] overflow-y-auto">
                           {citingTalks.map((talk, idx) => (
@@ -349,6 +367,8 @@ export function MostCitedContent() {
                             </div>
                           ))}
                         </div>
+                      )}
+                      </>
                       )}
                     </div>
                   )}

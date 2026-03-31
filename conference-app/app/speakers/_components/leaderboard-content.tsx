@@ -1,12 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { loadInsights, SpeakerLeaderboardData } from '@/lib/insights';
+import { useFilteredTalks } from '@/lib/filter-context';
+import { LIVING_SPEAKERS } from '@/lib/types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export function LeaderboardContent() {
   const [data, setData] = useState<SpeakerLeaderboardData | null>(null);
+  const { talks } = useFilteredTalks();
 
   useEffect(() => {
     loadInsights().then(i => setData(i.speakerLeaderboard));
@@ -20,7 +23,39 @@ export function LeaderboardContent() {
     );
   }
 
-  const top20 = data.speakers.slice(0, 20).map(s => ({
+  const latestCallingBySpeaker = useMemo(() => {
+    const seasonOrder = (season?: string) => (season === 'October' ? 1 : 0);
+    const latest = new Map<string, { year: number; season: string; calling: string }>();
+
+    for (const t of talks) {
+      const speaker = (t.speaker || '').trim();
+      const calling = (t.calling || '').trim();
+      if (!speaker || !calling || calling === 'No Calling Found') continue;
+
+      const prev = latest.get(speaker);
+      if (
+        !prev ||
+        t.year > prev.year ||
+        (t.year === prev.year && seasonOrder(t.season) > seasonOrder(prev.season))
+      ) {
+        latest.set(speaker, { year: t.year, season: t.season || 'April', calling });
+      }
+    }
+
+    return latest;
+  }, [talks]);
+
+  const speakersWithCalling = useMemo(() => (
+    data.speakers.map(s => {
+      const latest = latestCallingBySpeaker.get(s.speaker);
+      const fallback = s.calling;
+      const resolvedCalling = latest?.calling || fallback;
+      const callingLabel = LIVING_SPEAKERS.has(s.speaker) ? `${resolvedCalling} (current)` : `${resolvedCalling} (latest)`;
+      return { ...s, callingLabel };
+    })
+  ), [data.speakers, latestCallingBySpeaker]);
+
+  const top20 = speakersWithCalling.slice(0, 20).map(s => ({
     ...s,
     label: s.speaker.length > 22 ? s.speaker.substring(0, 20) + '...' : s.speaker,
   }));
@@ -54,7 +89,7 @@ export function LeaderboardContent() {
                       <p className="font-bold">{s.speaker}</p>
                       <p>{s.talks} talks across {s.conferences} conferences</p>
                       <p className="text-[#524534]">{s.firstYear}–{s.lastYear} ({s.span} year span)</p>
-                      <p className="text-[#524534]">{s.calling}</p>
+                      <p className="text-[#524534]">{s.callingLabel}</p>
                     </div>
                   );
                 }}
@@ -81,18 +116,18 @@ export function LeaderboardContent() {
                   <th className="p-2 text-right">Talks</th>
                   <th className="p-2 text-right hidden sm:table-cell">Conferences</th>
                   <th className="p-2 hidden md:table-cell">Years Active</th>
-                  <th className="p-2 hidden lg:table-cell">Calling</th>
+                  <th className="p-2 hidden lg:table-cell">Latest Calling</th>
                 </tr>
               </thead>
               <tbody>
-                {data.speakers.filter(s => s.talks >= 10).map((s, i) => (
+                {speakersWithCalling.filter(s => s.talks >= 10).map((s, i) => (
                   <tr key={s.speaker} className="border-b hover:bg-muted/50">
                     <td className="p-2 text-[#524534]">{i + 1}</td>
                     <td className="p-2 font-medium text-xs md:text-sm">{s.speaker}</td>
                     <td className="p-2 text-right font-bold">{s.talks}</td>
                     <td className="p-2 text-right hidden sm:table-cell">{s.conferences}</td>
                     <td className="p-2 text-[#524534] hidden md:table-cell">{s.firstYear}–{s.lastYear}</td>
-                    <td className="p-2 text-[#524534] text-xs hidden lg:table-cell">{s.calling}</td>
+                    <td className="p-2 text-[#524534] text-xs hidden lg:table-cell">{s.callingLabel}</td>
                   </tr>
                 ))}
               </tbody>

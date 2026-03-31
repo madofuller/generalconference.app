@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Navigation, TopAppBar } from '@/components/navigation';
 import { ShareButton } from '@/components/share-button';
-import { getWordleWord, checkWordleGuess, isValidWord, saveScore, getScores } from '@/lib/game-utils';
+import { getWordleWord, checkWordleGuess, isValidWord, isRealWord, saveScore, getScores } from '@/lib/game-utils';
 
 const KEYBOARD_ROWS = [
   ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
@@ -29,11 +29,13 @@ const KEY_COLORS = {
 export default function WordlePage() {
   const [targetWord, setTargetWord] = useState('');
   const [guesses, setGuesses] = useState<string[]>([]);
+  const [guessResults, setGuessResults] = useState<('correct' | 'present' | 'absent')[][]>([]);
   const [currentGuess, setCurrentGuess] = useState('');
   const [gameOver, setGameOver] = useState(false);
   const [won, setWon] = useState(false);
+  const [isRevealing, setIsRevealing] = useState(false);
+  const [checkingWord, setCheckingWord] = useState(false);
   const [shake, setShake] = useState(false);
-  const [revealRow, setRevealRow] = useState(-1);
   const [message, setMessage] = useState('');
   const [stats, setStats] = useState({ played: 0, won: 0, streak: 0 });
 
@@ -46,7 +48,9 @@ export default function WordlePage() {
     const saved = localStorage.getItem(todayKey);
     if (saved) {
       const state = JSON.parse(saved);
-      setGuesses(state.guesses || []);
+      const savedGuesses = state.guesses || [];
+      setGuesses(savedGuesses);
+      setGuessResults(savedGuesses.map((g: string) => checkWordleGuess(g, word)));
       setGameOver(state.gameOver || false);
       setWon(state.won || false);
     }
@@ -69,8 +73,8 @@ export default function WordlePage() {
     setTimeout(() => setMessage(''), duration);
   };
 
-  const submitGuess = useCallback(() => {
-    if (gameOver || currentGuess.length !== 5) return;
+  const submitGuess = useCallback(async () => {
+    if (gameOver || isRevealing || checkingWord || currentGuess.length !== 5) return;
 
     if (!isValidWord(currentGuess)) {
       setShake(true);
@@ -79,31 +83,59 @@ export default function WordlePage() {
       return;
     }
 
+    setCheckingWord(true);
+    const realWord = await isRealWord(currentGuess);
+    setCheckingWord(false);
+    if (!realWord) {
+      setShake(true);
+      showMessage('Not in word list');
+      setTimeout(() => setShake(false), 600);
+      return;
+    }
+
     const guess = currentGuess.toUpperCase();
     const newGuesses = [...guesses, guess];
+    const rowResults = checkWordleGuess(guess, targetWord);
+    const rowIndex = newGuesses.length - 1;
     setGuesses(newGuesses);
     setCurrentGuess('');
-    setRevealRow(newGuesses.length - 1);
-    setTimeout(() => setRevealRow(-1), 1500);
+    setIsRevealing(true);
+    setGuessResults(prev => [...prev, []]);
 
-    if (guess === targetWord) {
-      setWon(true);
-      setGameOver(true);
-      saveState(newGuesses, true, true);
-      saveScore({ gameType: 'wordle', score: 7 - newGuesses.length, date: new Date().toISOString(), details: `${newGuesses.length}/6` });
-      showMessage(['Genius!', 'Magnificent!', 'Impressive!', 'Splendid!', 'Great!', 'Phew!'][newGuesses.length - 1] || 'Nice!', 3000);
-    } else if (newGuesses.length >= 6) {
-      setGameOver(true);
-      saveState(newGuesses, true, false);
-      saveScore({ gameType: 'wordle', score: 0, date: new Date().toISOString(), details: 'X/6' });
-      showMessage(targetWord, 5000);
-    } else {
-      saveState(newGuesses, false, false);
+    const REVEAL_MS = 280;
+    for (let i = 0; i < rowResults.length; i++) {
+      setTimeout(() => {
+        setGuessResults(prev => {
+          const next = [...prev];
+          const currentRow = [...(next[rowIndex] || [])];
+          currentRow[i] = rowResults[i];
+          next[rowIndex] = currentRow;
+          return next;
+        });
+      }, i * REVEAL_MS);
     }
-  }, [currentGuess, guesses, gameOver, targetWord, saveState]);
+
+    setTimeout(() => {
+      setIsRevealing(false);
+      if (guess === targetWord) {
+        setWon(true);
+        setGameOver(true);
+        saveState(newGuesses, true, true);
+        saveScore({ gameType: 'wordle', score: 7 - newGuesses.length, date: new Date().toISOString(), details: `${newGuesses.length}/6` });
+        showMessage(['Genius!', 'Magnificent!', 'Impressive!', 'Splendid!', 'Great!', 'Phew!'][newGuesses.length - 1] || 'Nice!', 3000);
+      } else if (newGuesses.length >= 6) {
+        setGameOver(true);
+        saveState(newGuesses, true, false);
+        saveScore({ gameType: 'wordle', score: 0, date: new Date().toISOString(), details: 'X/6' });
+        showMessage(targetWord, 5000);
+      } else {
+        saveState(newGuesses, false, false);
+      }
+    }, rowResults.length * REVEAL_MS + 120);
+  }, [currentGuess, guesses, gameOver, isRevealing, checkingWord, targetWord, saveState]);
 
   const handleKey = useCallback((key: string) => {
-    if (gameOver) return;
+    if (gameOver || isRevealing || checkingWord) return;
 
     if (key === 'ENTER') {
       submitGuess();
@@ -112,7 +144,7 @@ export default function WordlePage() {
     } else if (/^[A-Z]$/i.test(key) && currentGuess.length < 5) {
       setCurrentGuess(prev => prev + key.toUpperCase());
     }
-  }, [currentGuess, gameOver, submitGuess]);
+  }, [currentGuess, gameOver, isRevealing, checkingWord, submitGuess]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -125,9 +157,10 @@ export default function WordlePage() {
 
   // Build keyboard color map
   const keyColors = new Map<string, string>();
-  guesses.forEach(guess => {
-    const results = checkWordleGuess(guess, targetWord);
+  guesses.forEach((guess, rowIdx) => {
+    const results = guessResults[rowIdx] || [];
     guess.split('').forEach((char, i) => {
+      if (!results[i]) return;
       const current = keyColors.get(char);
       if (results[i] === 'correct') {
         keyColors.set(char, 'correct');
@@ -170,7 +203,7 @@ export default function WordlePage() {
             {Array.from({ length: 6 }).map((_, rowIdx) => {
               const guess = guesses[rowIdx];
               const isCurrent = rowIdx === guesses.length && !gameOver;
-              const isRevealing = rowIdx === revealRow;
+              const isRevealingRow = isRevealing && rowIdx === guesses.length - 1;
 
               return (
                 <div
@@ -183,8 +216,8 @@ export default function WordlePage() {
 
                     if (guess) {
                       char = guess[colIdx];
-                      const results = checkWordleGuess(guess, targetWord);
-                      colorClass = TILE_COLORS[results[colIdx]];
+                      const results = guessResults[rowIdx] || [];
+                      colorClass = results[colIdx] ? TILE_COLORS[results[colIdx]] : TILE_COLORS.tbd;
                     } else if (isCurrent && colIdx < currentGuess.length) {
                       char = currentGuess[colIdx];
                       colorClass = TILE_COLORS.tbd;
@@ -194,7 +227,7 @@ export default function WordlePage() {
                       <div
                         key={colIdx}
                         className={`w-[52px] h-[52px] sm:w-14 sm:h-14 md:w-16 md:h-16 border-2 flex items-center justify-center text-xl sm:text-2xl md:text-3xl font-extrabold rounded-lg transition-all duration-300 ${colorClass} ${
-                          isRevealing ? `animate-[flipIn_0.5s_ease-in-out_${colIdx * 0.15}s_both]` : ''
+                          isRevealingRow ? `animate-[flipIn_0.5s_ease-in-out_${colIdx * 0.15}s_both]` : ''
                         } ${isCurrent && colIdx === currentGuess.length - 1 ? 'scale-105' : ''}`}
                       >
                         {char}

@@ -7,6 +7,13 @@ import Link from 'next/link';
 type SortKey = 'talks' | 'name' | 'first' | 'last';
 type FilterKey = 'all' | 'relief-society' | 'young-women' | 'primary';
 
+function cleanCallingLabel(value?: string): string {
+  if (!value) return '';
+  return value
+    .replace(/^recently released(?:\s+as)?\s+/i, '')
+    .trim();
+}
+
 function matchesFilter(p: WomenProfile, filter: FilterKey): boolean {
   const c = p.womenCalling.toLowerCase();
   if (filter === 'all') return true;
@@ -75,24 +82,24 @@ export function WomenContent() {
           placeholder="Search by name..."
           value={search}
           onChange={e => { setSearch(e.target.value); if (e.target.value.trim()) setFilter('all'); }}
-          className="w-full px-4 py-2 rounded-full border border-[#ece8d9] text-sm focus:outline-none focus:border-[#ec4899] mb-3"
+          className="w-full px-4 py-2 rounded-full border border-[#ece8d9] text-sm focus:outline-none focus:border-[#1B5E7B] mb-3"
         />
-        <div className={`flex overflow-x-auto scrollbar-hide gap-1.5 mb-2.5 pb-0.5 ${search.trim() ? 'hidden' : ''}`}>
+        <div className={`flex flex-wrap gap-1.5 mb-2.5 ${search.trim() ? 'hidden' : ''}`}>
           {filters.map(f => (
             <button
               key={f.key}
               onClick={() => setFilter(f.key)}
               className={`px-2.5 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all whitespace-nowrap shrink-0 ${
                 filter === f.key
-                  ? 'bg-[#ec4899] text-white'
-                  : 'bg-[#f8f4e4] text-[#1c1c13]/50 hover:bg-[#ec4899]/10'
+                  ? 'bg-[#1B5E7B] text-white'
+                  : 'bg-[#f8f4e4] text-[#1c1c13]/50 hover:bg-[#1B5E7B]/10'
               }`}
             >
               {f.label}
             </button>
           ))}
         </div>
-        <div className={`flex overflow-x-auto scrollbar-hide gap-1.5 pb-0.5 ${search.trim() ? 'hidden' : ''}`}>
+        <div className={`flex flex-wrap gap-1.5 ${search.trim() ? 'hidden' : ''}`}>
           {sorts.map(s => (
             <button
               key={s.key}
@@ -120,22 +127,30 @@ export function WomenContent() {
               <div className="flex items-center gap-3">
                 <div className="relative flex-shrink-0">
                   <div className="w-10 h-10 md:w-12 md:h-12 bg-[#ece8d9] rounded-full flex items-center justify-center">
-                    <span className="material-symbols-outlined text-[#ec4899] text-xl md:text-2xl">person</span>
+                    <span className="material-symbols-outlined text-[#1B5E7B] text-xl md:text-2xl">person</span>
                   </div>
-                  <div className="absolute -top-1 -left-1 w-5 h-5 rounded-full bg-pink-500 flex items-center justify-center">
+                  <div className="absolute -top-1 -left-1 w-5 h-5 rounded-full bg-[#1B5E7B] flex items-center justify-center">
                     <span className="text-[9px] font-extrabold text-white">{i + 1}</span>
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
+                  {(() => {
+                    const primaryCalling = cleanCallingLabel(p.womenCalling);
+                    const latestCalling = cleanCallingLabel(p.latestCalling);
+                    return (
+                      <>
                   <h3 className="font-bold text-[#1c1c13] text-[13px] md:text-sm truncate">{p.name}</h3>
-                  <p className="text-[11px] text-pink-600 truncate">{p.womenCalling}</p>
+                  <p className="text-[11px] text-[#1B5E7B] truncate">{primaryCalling}</p>
                   <p className="text-[10px] text-[#1c1c13]/40">
                     {p.firstTalk}&ndash;{p.lastTalk}
                     <span className="hidden sm:inline"> &middot; {p.totalConferences || 0} conf.</span>
-                    {p.latestCalling !== p.womenCalling && (
-                      <span className="hidden md:inline"> &middot; Now: {p.latestCalling}</span>
+                    {latestCalling && latestCalling !== primaryCalling && (
+                      <span className="hidden md:inline"> &middot; Now: {latestCalling}</span>
                     )}
                   </p>
+                      </>
+                    );
+                  })()}
                 </div>
                 <div className="text-right flex-shrink-0 pl-2">
                   <p className="text-xl md:text-2xl font-extrabold text-[#1c1c13]">{p.totalTalks}</p>

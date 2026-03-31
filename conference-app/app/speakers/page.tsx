@@ -8,7 +8,6 @@ import { LeaderboardContent } from './_components/leaderboard-content';
 import { ServiceContent } from './_components/service-content';
 import { CareersContent } from './_components/careers-content';
 import { SimilarityContent } from './_components/similarity-content';
-import { FingerprintContent } from './_components/fingerprint-content';
 
 const TABS = [
   { id: 'journeys', label: 'Journeys', icon: 'route' },
@@ -16,7 +15,6 @@ const TABS = [
   { id: 'service', label: 'Service', icon: 'timeline' },
   { id: 'careers', label: 'Callings', icon: 'trending_up' },
   { id: 'similarity', label: 'Similarity', icon: 'compare_arrows' },
-  { id: 'fingerprint', label: 'Fingerprint', icon: 'fingerprint' },
 ];
 
 export default function SpeakerHubPage() {
@@ -34,7 +32,6 @@ export default function SpeakerHubPage() {
                 {activeTab === 'service' && <ServiceContent />}
                 {activeTab === 'careers' && <CareersContent />}
                 {activeTab === 'similarity' && <SimilarityContent />}
-                {activeTab === 'fingerprint' && <FingerprintContent />}
               </>
             )}
           </PageTabs>

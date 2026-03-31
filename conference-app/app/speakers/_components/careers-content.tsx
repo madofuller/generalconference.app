@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { loadInsights, CareerProgressionsData, CareerProgression } from '@/lib/insights';
+import { useFilteredTalks } from '@/lib/filter-context';
 
 const CALLING_RANK: Record<string, number> = {
   'President of the Church': 10,
@@ -61,18 +62,75 @@ function getCallingShort(calling: string): string {
 }
 
 export function CareersContent() {
+  const { talks } = useFilteredTalks();
   const [data, setData] = useState<CareerProgressionsData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedSpeaker, setSelectedSpeaker] = useState<CareerProgression | null>(null);
   const [filter, setFilter] = useState<'all' | 'prophets' | 'apostles' | 'seventy'>('all');
 
-  useEffect(() => {
-    loadInsights().then(i => setData(i.careerProgressions || null));
-  }, []);
+  const buildFallbackCareerData = (): CareerProgressionsData => {
+    const bySpeaker = new Map<string, { year: number; season: string; calling: string }[]>();
+    for (const t of talks) {
+      const speaker = (t.speaker || '').trim();
+      if (!speaker) continue;
+      const calling = (t.calling || '').trim();
+      if (!calling || calling === 'No Calling Found') continue;
+      if (!bySpeaker.has(speaker)) bySpeaker.set(speaker, []);
+      bySpeaker.get(speaker)!.push({ year: t.year, season: t.season || 'April', calling });
+    }
 
-  if (!data) {
+    const speakers: CareerProgression[] = Array.from(bySpeaker.entries())
+      .map(([speaker, entries]) => {
+        const sorted = [...entries].sort((a, b) => a.year - b.year || (a.season === 'April' ? -1 : 1));
+        const milestones = sorted.filter((e, i) =>
+          i === 0 || e.calling !== sorted[i - 1].calling
+        );
+        const years = sorted.map(e => e.year);
+        return {
+          speaker,
+          totalTalks: sorted.length,
+          totalCallings: new Set(sorted.map(e => e.calling)).size,
+          firstYear: Math.min(...years),
+          lastYear: Math.max(...years),
+          currentCalling: sorted[sorted.length - 1]?.calling || '',
+          milestones,
+        };
+      })
+      .filter(s => s.milestones.length > 0)
+      .sort((a, b) => b.totalTalks - a.totalTalks);
+
+    return {
+      title: 'Calling Progressions',
+      subtitle: 'How leaders have served over time',
+      headline: 'Career progression built from talk metadata',
+      speakers,
+    };
+  };
+
+  useEffect(() => {
+    loadInsights()
+      .then(i => {
+        if (i.careerProgressions && i.careerProgressions.speakers?.length) {
+          setData(i.careerProgressions);
+        } else {
+          setData(buildFallbackCareerData());
+        }
+      })
+      .finally(() => setIsLoading(false));
+  }, [talks]);
+
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
         <p className="text-[#1c1c13]/40">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!data || data.speakers.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <p className="text-[#1c1c13]/40">No calling progression data available.</p>
       </div>
     );
   }

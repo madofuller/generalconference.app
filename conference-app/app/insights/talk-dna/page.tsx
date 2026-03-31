@@ -1,26 +1,29 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Navigation, TopAppBar } from '@/components/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useFilteredFullTalks } from '@/lib/filter-context';
 import { Talk, LIVING_APOSTLES, LIVING_SPEAKERS, PRESIDENTS_OF_THE_CHURCH } from '@/lib/types';
+import { loadInsights, SpeakerFingerprintData } from '@/lib/insights';
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   ResponsiveContainer, Legend,
 } from 'recharts';
 
 const DIMENSIONS = [
-  'Sentence Length', 'Scripture Rate', 'Warmth',
-  'Vocabulary Richness', 'Talk Length', 'Questions',
-  'Positivity', 'Storytelling',
+  'Sentence Length', 'Questions', 'Scriptures',
+  'Stories', 'Direct Address', 'Christ References', 'Exclamations',
 ] as const;
 
 const STORY_MARKERS = ['i remember', 'story', 'when i was', 'my father', 'my mother', 'one day', 'years ago', 'let me share', 'i recall', 'i was reminded'];
-const WARMTH_WORDS = ['love', 'dear', 'brothers', 'sisters', 'heart', 'tender', 'cherish', 'embrace', 'care', 'bless'];
-const POSITIVE_WORDS = ['joy', 'hope', 'peace', 'happy', 'wonderful', 'beautiful', 'blessed', 'grateful', 'thankful', 'rejoice', 'delight', 'glorious'];
-const NEGATIVE_WORDS = ['fear', 'sorrow', 'danger', 'warning', 'wicked', 'sin', 'suffer', 'pain', 'grief', 'trial', 'afflict', 'temptation'];
+const DIRECT_ADDRESS_WORDS = [' you ', ' your ', ' yours ', ' yourself ', ' yourselves '];
+const CHRIST_WORDS = ['jesus', 'christ', 'savior', 'redeemer', 'lord'];
+const TOPIC_COLORS = [
+  '#1B5E7B', '#f5a623', '#e74c3c', '#2ecc71', '#9b59b6',
+  '#1abc9c', '#e67e22', '#3498db',
+];
 
 interface SpeakerDNA {
   speaker: string;
@@ -55,8 +58,6 @@ function computeAllDNA(talks: Talk[]): SpeakerDNA[] {
   const rawData: { speaker: string; talkCount: number; firstYear: number; lastYear: number; calling: string; raw: Record<string, number> }[] = [];
 
   bySpeaker.forEach((speakerTalks, speaker) => {
-    if (speakerTalks.length < 5) return;
-
     const raw: Record<string, number> = {};
     const allText = speakerTalks.map(t => t.talk || '').join(' ');
     const totalWords = allText.split(/\s+/).length;
@@ -65,33 +66,27 @@ function computeAllDNA(talks: Talk[]): SpeakerDNA[] {
     const sentences = allText.split(/[.!?]+/).filter(s => s.trim().length > 0);
     raw['Sentence Length'] = sentences.length > 0 ? sentences.reduce((s, sent) => s + sent.trim().split(/\s+/).length, 0) / sentences.length : 0;
 
-    // 2. Scripture Rate
-    const scriptureMatches = (allText.match(/\d+:\d+/g) || []).length;
-    raw['Scripture Rate'] = totalWords > 0 ? (scriptureMatches / totalWords) * 1000 : 0;
-
-    // 3. Warmth (replacing "Emotional Intensity" which needs emotion data)
-    raw['Warmth'] = totalWords > 0 ? (countKeywords(allText, WARMTH_WORDS) / totalWords) * 1000 : 0;
-
-    // 4. Vocabulary Richness
-    const words = allText.toLowerCase().split(/\s+/).filter(w => w.length > 2);
-    const uniqueWords = new Set(words);
-    raw['Vocabulary Richness'] = words.length > 0 ? (uniqueWords.size / words.length) * 100 : 0;
-
-    // 5. Talk Length
-    raw['Talk Length'] = totalWords / speakerTalks.length;
-
-    // 6. Questions (how often they ask questions)
+    // 2. Questions
     const questionMarks = (allText.match(/\?/g) || []).length;
     raw['Questions'] = totalWords > 0 ? (questionMarks / totalWords) * 1000 : 0;
 
-    // 7. Positivity
-    const posHits = countKeywords(allText, POSITIVE_WORDS);
-    const negHits = countKeywords(allText, NEGATIVE_WORDS);
-    raw['Positivity'] = (posHits + negHits) > 0 ? (posHits / (posHits + negHits)) * 100 : 50;
+    // 3. Scriptures
+    const scriptureMatches = (allText.match(/\d+:\d+/g) || []).length;
+    raw['Scriptures'] = totalWords > 0 ? (scriptureMatches / totalWords) * 1000 : 0;
 
-    // 8. Storytelling
+    // 4. Stories
     const storyHits = countKeywords(allText, STORY_MARKERS);
-    raw['Storytelling'] = totalWords > 0 ? (storyHits / totalWords) * 1000 : 0;
+    raw['Stories'] = totalWords > 0 ? (storyHits / totalWords) * 1000 : 0;
+
+    // 5. Direct Address ("you/your" language)
+    raw['Direct Address'] = totalWords > 0 ? (countKeywords(` ${allText.toLowerCase()} `, DIRECT_ADDRESS_WORDS) / totalWords) * 1000 : 0;
+
+    // 6. Christ References
+    raw['Christ References'] = totalWords > 0 ? (countKeywords(allText, CHRIST_WORDS) / totalWords) * 1000 : 0;
+
+    // 7. Exclamations
+    const exclamations = (allText.match(/!/g) || []).length;
+    raw['Exclamations'] = totalWords > 0 ? (exclamations / totalWords) * 1000 : 0;
 
     const years = speakerTalks.map(t => t.year);
     const lastCalling = speakerTalks.sort((a, b) => b.year - a.year)[0]?.calling || '';
@@ -141,17 +136,15 @@ function computePeriodDNA(speakerTalks: Talk[], period: 'all' | 'early' | 'late'
   if (totalWords < 100) return null;
 
   const sentences = allText.split(/[.!?]+/).filter(s => s.trim().length > 0);
-  const words = allText.toLowerCase().split(/\s+/).filter(w => w.length > 2);
 
   return {
     'Sentence Length': sentences.length > 0 ? sentences.reduce((s, sent) => s + sent.trim().split(/\s+/).length, 0) / sentences.length : 0,
-    'Scripture Rate': (allText.match(/\d+:\d+/g) || []).length / totalWords * 1000,
-    'Warmth': countKeywords(allText, WARMTH_WORDS) / totalWords * 1000,
-    'Vocabulary Richness': words.length > 0 ? (new Set(words).size / words.length) * 100 : 0,
-    'Talk Length': totalWords / subset.length,
     'Questions': ((allText.match(/\?/g) || []).length / totalWords) * 1000,
-    'Positivity': (() => { const p = countKeywords(allText, POSITIVE_WORDS); const n = countKeywords(allText, NEGATIVE_WORDS); return (p + n) > 0 ? (p / (p + n)) * 100 : 50; })(),
-    'Storytelling': countKeywords(allText, STORY_MARKERS) / totalWords * 1000,
+    'Scriptures': (allText.match(/\d+:\d+/g) || []).length / totalWords * 1000,
+    'Stories': countKeywords(allText, STORY_MARKERS) / totalWords * 1000,
+    'Direct Address': countKeywords(` ${allText.toLowerCase()} `, DIRECT_ADDRESS_WORDS) / totalWords * 1000,
+    'Christ References': countKeywords(allText, CHRIST_WORDS) / totalWords * 1000,
+    'Exclamations': ((allText.match(/!/g) || []).length / totalWords) * 1000,
   };
 }
 
@@ -159,12 +152,21 @@ type SortMode = 'talks' | 'living' | 'apostles' | 'prophets' | 'unique' | 'recen
 
 export default function TalkDNAPage() {
   const { talks, loading } = useFilteredFullTalks();
+  const [fpData, setFpData] = useState<SpeakerFingerprintData | null>(null);
   const [view, setView] = useState<'gallery' | 'detail' | 'compare' | 'ranking' | 'evolution'>('gallery');
   const [selected, setSelected] = useState('');
   const [compare, setCompare] = useState('');
   const [sortMode, setSortMode] = useState<SortMode>('talks');
 
+  useEffect(() => {
+    loadInsights().then(i => setFpData(i.speakerFingerprints || null));
+  }, []);
+
   const dna = useMemo(() => computeAllDNA(talks), [talks]);
+  const fpMap = useMemo(() => {
+    if (!fpData) return new Map();
+    return new Map(fpData.speakers.map(s => [s.speaker, s]));
+  }, [fpData]);
 
   const sortedDNA = useMemo(() => {
     const list = [...dna];
@@ -180,6 +182,7 @@ export default function TalkDNAPage() {
 
   const selectedDNA = dna.find(d => d.speaker === selected);
   const compareDNA = dna.find(d => d.speaker === compare);
+  const selectedFp = selected ? fpMap.get(selected) : null;
   const ranked = useMemo(() => [...dna].sort((a, b) => b.uniqueness - a.uniqueness), [dna]);
 
   // Career evolution data
@@ -226,7 +229,7 @@ export default function TalkDNAPage() {
           <Card className="mb-4 md:mb-6 border-violet-200 bg-violet-50/50 overflow-hidden">
             <CardContent className="pt-4 md:pt-6">
               <p className="text-sm md:text-lg font-medium text-violet-900">
-                Every speaker has a unique &quot;fingerprint&quot; across 8 dimensions. Browse the gallery, compare speakers, and see how fingerprints evolve over a career.
+                Every speaker has a unique &quot;fingerprint&quot; across 7 dimensions. Browse the gallery, compare speakers, and see how fingerprints evolve over a career.
               </p>
             </CardContent>
           </Card>
@@ -312,6 +315,49 @@ export default function TalkDNAPage() {
                         <p><strong>Most distinctive:</strong> {DIMENSIONS.reduce((best, dim) => Math.abs(selectedDNA.normalized[dim] - 50) > Math.abs(selectedDNA.normalized[best] - 50) ? dim : best, DIMENSIONS[0])}</p>
                         <p className="mt-1"><strong>Uniqueness rank:</strong> #{ranked.findIndex(r => r.speaker === selectedDNA.speaker) + 1} of {ranked.length}</p>
                       </div>
+
+                      {selectedFp && selectedFp.signaturePhrases.length > 0 && (
+                        <div className="mt-4 pt-4 border-t border-[#f5a623]/10">
+                          <p className="text-xs font-bold uppercase tracking-wider text-[#1c1c13]/40 mb-2">Signature Phrases</p>
+                          <div className="flex flex-wrap gap-2">
+                            {selectedFp.signaturePhrases.slice(0, 6).map((p: { phrase: string; ratio: number }) => (
+                              <span key={p.phrase} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1B5E7B]/10 text-[#1B5E7B] text-[11px] font-medium">
+                                &ldquo;{p.phrase}&rdquo;
+                                <span className="text-[#f5a623] font-bold">{p.ratio}x</span>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {selectedFp && (
+                        <div className="mt-4 pt-4 border-t border-[#f5a623]/10">
+                          <p className="text-xs font-bold uppercase tracking-wider text-[#1c1c13]/40 mb-2">Topic Emphasis</p>
+                          <div className="space-y-2">
+                            {Object.entries(selectedFp.topicProfile)
+                              .map(([topic, value]) => ({ topic, value: value as number, global: (fpData?.globalTopicProfile?.[topic] || 0) as number }))
+                              .filter(t => t.global > 0)
+                              .map(t => ({ ...t, ratio: t.value / t.global }))
+                              .sort((a, b) => b.ratio - a.ratio)
+                              .slice(0, 5)
+                              .map((t, i) => {
+                                const pct = Math.min(t.ratio * 50, 100);
+                                const delta = Math.round((t.ratio - 1) * 100);
+                                return (
+                                  <div key={t.topic}>
+                                    <div className="flex justify-between text-[11px] mb-0.5">
+                                      <span className="font-medium text-[#1c1c13]">{t.topic}</span>
+                                      <span className="text-[#1B5E7B] font-bold">{delta >= 0 ? '+' : ''}{delta}%</span>
+                                    </div>
+                                    <div className="h-1.5 bg-[#f8f4e4] rounded-full overflow-hidden">
+                                      <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: TOPIC_COLORS[i % TOPIC_COLORS.length] }} />
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                          </div>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 </div>
@@ -436,10 +482,10 @@ export default function TalkDNAPage() {
           <Card className="mt-8 border-amber-200 bg-amber-50/50">
             <CardContent className="pt-6">
               <p className="text-xs text-amber-800">
-                <strong>Methodology:</strong> Eight dimensions computed from talk text: sentence length (avg words/sentence), scripture rate (chapter:verse per 1000 words),
-                warmth (caring keywords per 1000 words), vocabulary richness (unique/total word ratio), talk length (avg words),
-                questions (question marks per 1000 words), positivity (positive vs negative keyword ratio), storytelling (narrative markers per 1000 words).
-                All normalized 0-100 across speakers with 5+ talks.
+                <strong>Methodology:</strong> Seven dimensions computed from talk text: sentence length (average words per sentence), questions (question marks per 1000 words),
+                scriptures (chapter:verse references per 1000 words), stories (narrative markers per 1000 words), direct address (&quot;you/your&quot; language per 1000 words),
+                Christ references (Jesus/Christ terms per 1000 words), and exclamations (exclamation marks per 1000 words).
+                All normalized 0-100 across all speakers in the loaded talk set.
               </p>
             </CardContent>
           </Card>

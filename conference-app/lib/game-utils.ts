@@ -319,48 +319,46 @@ export function generateTriviaQuestions(talks: Talk[], count: number = 10, categ
 // === BINGO ===
 
 const COMMON_PHRASES = [
-  'tender mercies', 'covenant path', 'plan of salvation', 'fullness of the gospel',
-  'Book of Mormon', 'Holy Ghost', 'Heavenly Father', 'Jesus Christ',
-  'temple', 'eternal life', 'sacrament', 'priesthood', 'testimony',
-  'faith', 'repentance', 'baptism', 'Holy Spirit', 'prophet',
+  'tender mercies', 'covenant path', 'plan of salvation', 'Book of Mormon',
+  'Jesus Christ', 'priesthood', 'testimony', 'repentance', 'baptism',
   'Atonement', 'scriptures', 'prayer', 'revelation', 'commandments',
-  'charity', 'hope', 'agency', 'resurrection', 'tithing',
-  'family', 'service', 'missionary', 'endure to the end', 'celestial kingdom',
-  'obedience', 'gratitude', 'Sabbath day', 'Word of Wisdom', 'Second Coming',
+  'agency', 'resurrection', 'tithing', 'service', 'missionary',
+  'obedience', 'gratitude', 'Sabbath day', 'Second Coming', 'faith',
 ];
 
 const BINGO_EVENTS = [
-  'New temple announced', 'Story about a child', 'Reference to hymn',
-  'Personal family story', 'Quote from previous prophet', 'Mention of current events',
-  'Story from scriptures', 'Statistics cited', 'Humor/laughter from audience',
-  'Reference to pioneer history', 'Talk about youth', 'Mention of technology',
-  'Speaker gets emotional', 'Musical number', 'Sustained by vote',
+  'Temple announced', 'Story about family', 'Hymn quoted', 'Scripture story',
+  'Audience laughs', 'Speaker gets emotional', 'Current prophet quoted',
+  'Past prophet quoted', 'Youth mentioned', 'Covenants mentioned',
+  'Missionary work mentioned', 'Temple worship mentioned', 'Prayer invited',
+  'Repentance invited', 'Jesus Christ emphasized',
+];
+
+const SESSION_MOMENTS = [
+  'Joke/laughter', 'Tears/emotional pause', 'Long quote read aloud',
+  'Strong invitation to act', 'Personal conversion story', 'Mission story',
+  'Temple covenant focus', 'Service challenge', 'Family-centered message',
+  'Youth/children focus', 'Global Church mention', 'Testimony closing',
+  'Prayer emphasis', 'Forgiveness emphasis', 'Hope in trials',
 ];
 
 export function generateBingoCard(talks: Talk[]): BingoCard {
   const items: BingoItem[] = [];
 
-  // Get recent speakers, filter out bad names
-  const recentTalks = talks.filter(t => t.year >= 2020 && t.speaker && !t.speaker.startsWith('Presented'));
-  const recentSpeakers = [...new Set(recentTalks.map(t => t.speaker))];
-  const speakerItems = pickRandom(recentSpeakers, 7).map(s => ({
-    text: s, category: 'speaker' as const, marked: false,
-  }));
-
-  const phraseItems = pickRandom(COMMON_PHRASES, 8).map(p => ({
+  const phraseItems = pickRandom(COMMON_PHRASES, 9).map(p => ({
     text: p, category: 'phrase' as const, marked: false,
   }));
 
   const topicSet = [...new Set(talks.filter(t => t.primary_topic).map(t => t.primary_topic!))];
-  const topicItems = pickRandom(topicSet, 5).map(t => ({
+  const topicItems = pickRandom(topicSet, 7).map(t => ({
     text: t, category: 'topic' as const, marked: false,
   }));
 
-  const eventItems = pickRandom(BINGO_EVENTS, 5).map(e => ({
+  const eventItems = [...pickRandom(BINGO_EVENTS, 5), ...pickRandom(SESSION_MOMENTS, 3)].map(e => ({
     text: e, category: 'event' as const, marked: false,
   }));
 
-  items.push(...speakerItems, ...phraseItems, ...topicItems, ...eventItems);
+  items.push(...phraseItems, ...topicItems, ...eventItems);
 
   // We need exactly 24 items (25 minus the free space)
   // Pad with extra phrases if needed
@@ -713,6 +711,33 @@ export function checkWordleGuess(guess: string, target: string): ('correct' | 'p
 
 export function isValidWord(word: string): boolean {
   return /^[A-Z]{5}$/i.test(word);
+}
+
+const WORD_VALIDATION_CACHE = new Map<string, boolean>();
+
+// Real-word validation for Wordle guesses.
+// Uses dictionaryapi.dev with local fallback to conference answers.
+export async function isRealWord(word: string): Promise<boolean> {
+  const upper = word.toUpperCase();
+  if (!/^[A-Z]{5}$/.test(upper)) return false;
+  if (WORD_VALIDATION_CACHE.has(upper)) return WORD_VALIDATION_CACHE.get(upper)!;
+
+  // Always accept official answer words.
+  if (CONFERENCE_WORDS.map(w => w.toUpperCase()).includes(upper)) {
+    WORD_VALIDATION_CACHE.set(upper, true);
+    return true;
+  }
+
+  try {
+    const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${upper.toLowerCase()}`);
+    const ok = res.ok;
+    WORD_VALIDATION_CACHE.set(upper, ok);
+    return ok;
+  } catch {
+    // If offline, only allow words from the built-in answer list.
+    WORD_VALIDATION_CACHE.set(upper, false);
+    return false;
+  }
 }
 
 // === SCORE MANAGEMENT (localStorage) ===

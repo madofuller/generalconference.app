@@ -102,7 +102,7 @@ export function SeventiesContent() {
           onChange={e => { setSearch(e.target.value); if (e.target.value.trim()) setFilter('all'); }}
           className="w-full px-4 py-2 rounded-full border border-[#ece8d9] text-sm focus:outline-none focus:border-[#1B5E7B] mb-3"
         />
-        <div className={`flex overflow-x-auto scrollbar-hide gap-1.5 mb-2.5 pb-0.5 ${search.trim() ? 'hidden' : ''}`}>
+        <div className={`flex flex-wrap gap-1.5 mb-2.5 ${search.trim() ? 'hidden' : ''}`}>
           {filters.map(f => (
             <button
               key={f.key}
@@ -117,7 +117,7 @@ export function SeventiesContent() {
             </button>
           ))}
         </div>
-        <div className={`flex overflow-x-auto scrollbar-hide gap-1.5 pb-0.5 ${search.trim() ? 'hidden' : ''}`}>
+        <div className={`flex flex-wrap gap-1.5 ${search.trim() ? 'hidden' : ''}`}>
           {sorts.map(s => (
             <button
               key={s.key}

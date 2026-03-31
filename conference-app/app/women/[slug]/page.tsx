@@ -6,6 +6,13 @@ import { Navigation, TopAppBar } from '@/components/navigation';
 import { loadInsights, WomenProfile } from '@/lib/insights';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 
+function cleanCallingLabel(value?: string): string {
+  if (!value) return '';
+  return value
+    .replace(/^recently released(?:\s+as)?\s+/i, '')
+    .trim();
+}
+
 export default function WomenDetailPage() {
   const params = useParams();
   const [profile, setProfile] = useState<WomenProfile | null>(null);
@@ -32,14 +39,14 @@ export default function WomenDetailPage() {
     <div className="flex min-h-screen">
       <Navigation />
       <main className="ml-0 lg:ml-[260px] min-h-screen flex-1" style={{ background: '#fdf9e9' }}>
-        <TopAppBar title={profile.name} subtitle={profile.womenCalling} />
+        <TopAppBar title={profile.name} subtitle={cleanCallingLabel(profile.womenCalling)} />
         <div className="px-4 md:px-8 lg:px-12 pb-12 md:pb-24">
 
           {/* Calling info */}
-          {profile.latestCalling !== profile.womenCalling && (
-            <div className="bg-pink-50 border border-pink-200 p-4 rounded-xl mb-6">
-              <p className="text-sm text-pink-800">
-                <span className="font-bold">Latest calling:</span> {profile.latestCalling}
+          {cleanCallingLabel(profile.latestCalling) && cleanCallingLabel(profile.latestCalling) !== cleanCallingLabel(profile.womenCalling) && (
+            <div className="bg-[#1B5E7B]/5 border border-[#1B5E7B]/20 p-4 rounded-xl mb-6">
+              <p className="text-sm text-[#1B5E7B]">
+                <span className="font-bold">Latest calling:</span> {cleanCallingLabel(profile.latestCalling)}
               </p>
             </div>
           )}
@@ -64,10 +71,10 @@ export default function WomenDetailPage() {
             {/* Top Words */}
             {profile.topWords && profile.topWords.length > 0 && (
               <div className="bg-white p-4 md:p-6 lg:p-8 rounded-xl shadow-[0px_12px_32px_rgba(27,94,123,0.06)]">
-                <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-[#ec4899]/60 mb-4">Defining Words</h3>
+                <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-[#1B5E7B]/60 mb-4">Defining Words</h3>
                 <div className="flex flex-wrap gap-2">
                   {profile.topWords.map(w => (
-                    <span key={w} className="px-3 py-1.5 rounded-full bg-pink-500/10 text-pink-700 text-sm font-bold">{w}</span>
+                    <span key={w} className="px-3 py-1.5 rounded-full bg-[#1B5E7B]/10 text-[#1B5E7B] text-sm font-bold">{w}</span>
                   ))}
                 </div>
               </div>
@@ -76,7 +83,7 @@ export default function WomenDetailPage() {
             {/* Signature Phrases */}
             {profile.signaturePhrases && profile.signaturePhrases.length > 0 && (
               <div className="bg-white p-4 md:p-6 lg:p-8 rounded-xl shadow-[0px_12px_32px_rgba(27,94,123,0.06)]">
-                <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-[#ec4899]/60 mb-4">Signature Phrases</h3>
+                <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-[#1B5E7B]/60 mb-4">Signature Phrases</h3>
                 <div className="space-y-2">
                   {profile.signaturePhrases.slice(0, 8).map(sp => (
                     <div key={sp.phrase} className="flex items-center justify-between">
@@ -92,14 +99,14 @@ export default function WomenDetailPage() {
           {/* Top Scriptures */}
           {profile.topScriptures && profile.topScriptures.length > 0 && (
             <div className="bg-white p-4 md:p-6 lg:p-8 rounded-xl shadow-[0px_12px_32px_rgba(27,94,123,0.06)] mb-10">
-              <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-[#ec4899]/60 mb-4">Most Quoted Scriptures</h3>
+              <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-[#1B5E7B]/60 mb-4">Most Quoted Scriptures</h3>
               <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={profile.topScriptures.slice(0, 10).map(s => ({ scripture: s.ref, count: s.count }))} layout="vertical" margin={{ left: 20 }}>
+                <BarChart data={profile.topScriptures.slice(0, 10).map(s => ({ scripture: s.ref, count: s.count }))} layout="vertical" margin={{ left: 4, right: 8 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#ece8d9" />
                   <XAxis type="number" />
-                  <YAxis type="category" dataKey="scripture" width={120} tick={{ fontSize: 11, fill: '#1c1c13' }} />
+                  <YAxis type="category" dataKey="scripture" width={64} tick={{ fontSize: 10, fill: '#1c1c13' }} />
                   <Tooltip />
-                  <Bar dataKey="count" fill="#ec4899" radius={[0, 6, 6, 0]} />
+                  <Bar dataKey="count" fill="#1B5E7B" radius={[0, 6, 6, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -108,14 +115,14 @@ export default function WomenDetailPage() {
           {/* Christ Mentions Over Time */}
           {profile.christByYear && profile.christByYear.length > 0 && (
             <div className="bg-white p-4 md:p-6 lg:p-8 rounded-xl shadow-[0px_12px_32px_rgba(27,94,123,0.06)] mb-10">
-              <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-[#ec4899]/60 mb-4">Christ Mentions Per Talk Over Time</h3>
+              <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-[#1B5E7B]/60 mb-4">Christ Mentions Per Talk Over Time</h3>
               <ResponsiveContainer width="100%" height={250}>
                 <LineChart data={profile.christByYear}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#ece8d9" />
                   <XAxis dataKey="year" />
                   <YAxis />
                   <Tooltip />
-                  <Line type="monotone" dataKey="mentions" stroke="#e11d48" strokeWidth={2} dot={{ r: 3 }} />
+                  <Line type="monotone" dataKey="mentions" stroke="#1B5E7B" strokeWidth={2} dot={{ r: 3 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -124,7 +131,7 @@ export default function WomenDetailPage() {
           {/* All Talks List */}
           {profile.talks && profile.talks.length > 0 && (
             <div className="bg-white p-4 md:p-6 lg:p-8 rounded-xl shadow-[0px_12px_32px_rgba(27,94,123,0.06)]">
-              <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-[#ec4899]/60 mb-4">
+              <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-[#1B5E7B]/60 mb-4">
                 All Conference Talks ({profile.talks.length})
               </h3>
               <div className="space-y-2">
@@ -136,9 +143,9 @@ export default function WomenDetailPage() {
                           {t.title}
                           {t.url && <span className="material-symbols-outlined text-[#1B5E7B]/40 text-sm ml-1 align-middle">open_in_new</span>}
                         </p>
-                        <p className="text-xs text-[#1c1c13]/40">{t.season} {t.year} &middot; {t.wordCount.toLocaleString()} words &middot; {t.calling}</p>
+                        <p className="text-xs text-[#1c1c13]/40">{t.season} {t.year} &middot; {t.wordCount.toLocaleString()} words &middot; {cleanCallingLabel(t.calling)}</p>
                       </div>
-                      <span className="text-xs text-[#ec4899] font-bold">{t.year}</span>
+                      <span className="text-xs text-[#1B5E7B] font-bold">{t.year}</span>
                     </div>
                   );
                   return t.url ? (

@@ -8,6 +8,13 @@ import Link from 'next/link';
 type SortKey = 'talks' | 'name' | 'first' | 'last';
 type FilterKey = 'all' | 'relief-society' | 'young-women' | 'primary';
 
+function cleanCallingLabel(value?: string): string {
+  if (!value) return '';
+  return value
+    .replace(/^recently released(?:\s+as)?\s+/i, '')
+    .trim();
+}
+
 function matchesFilter(p: WomenProfile, filter: FilterKey): boolean {
   const c = p.womenCalling.toLowerCase();
   if (filter === 'all') return true;
@@ -80,7 +87,7 @@ export default function WomenDirectoryPage() {
               placeholder="Search by name..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full px-4 py-2 rounded-full border border-[#ece8d9] text-sm focus:outline-none focus:border-[#ec4899] mb-3"
+              className="w-full px-4 py-2 rounded-full border border-[#ece8d9] text-sm focus:outline-none focus:border-[#1B5E7B] mb-3"
             />
             <div className="flex flex-wrap gap-2 mb-3">
               {filters.map(f => (
@@ -89,8 +96,8 @@ export default function WomenDirectoryPage() {
                   onClick={() => setFilter(f.key)}
                   className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
                     filter === f.key
-                      ? 'bg-[#ec4899] text-white'
-                      : 'bg-[#f8f4e4] text-[#1c1c13]/50 hover:bg-[#ec4899]/10'
+                      ? 'bg-[#1B5E7B] text-white'
+                      : 'bg-[#f8f4e4] text-[#1c1c13]/50 hover:bg-[#1B5E7B]/10'
                   }`}
                 >
                   {f.label}
@@ -123,19 +130,27 @@ export default function WomenDirectoryPage() {
               <Link key={p.slug} href={`/women/${p.slug}`}>
                 <div className="bg-white p-4 md:p-6 rounded-xl shadow-[0px_12px_32px_rgba(27,94,123,0.06)] hover:-translate-y-1 transition-all duration-300 cursor-pointer mb-3">
                   <div className="flex items-start gap-4">
-                    <div className="w-8 h-8 rounded-full bg-pink-500/20 flex items-center justify-center flex-shrink-0">
-                      <span className="text-xs font-extrabold text-pink-700">{i + 1}</span>
+                    <div className="w-8 h-8 rounded-full bg-[#1B5E7B]/15 flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs font-extrabold text-[#1B5E7B]">{i + 1}</span>
                     </div>
                     <div className="w-12 h-12 bg-[#ece8d9] rounded-full flex items-center justify-center flex-shrink-0 border-4 border-[#fdf9e9]">
-                      <span className="material-symbols-outlined text-[#ec4899] text-2xl">person</span>
+                      <span className="material-symbols-outlined text-[#1B5E7B] text-2xl">person</span>
                     </div>
                     <div className="flex-1 min-w-0">
+                      {(() => {
+                        const primaryCalling = cleanCallingLabel(p.womenCalling);
+                        const latestCalling = cleanCallingLabel(p.latestCalling);
+                        return (
+                          <>
                       <h3 className="font-bold text-[#1c1c13] text-sm">{p.name}</h3>
-                      <p className="text-xs text-pink-600 mb-1">{p.womenCalling}</p>
-                      {p.latestCalling !== p.womenCalling && (
-                        <p className="text-[10px] text-[#1c1c13]/40">Latest: {p.latestCalling}</p>
+                      <p className="text-xs text-[#1B5E7B] mb-1">{primaryCalling}</p>
+                      {latestCalling && latestCalling !== primaryCalling && (
+                        <p className="text-[10px] text-[#1c1c13]/40">Latest: {latestCalling}</p>
                       )}
                       <p className="text-[10px] text-[#1c1c13]/40">{p.firstTalk}&ndash;{p.lastTalk} &middot; {p.totalConferences || 0} conferences</p>
+                          </>
+                        );
+                      })()}
                     </div>
                     <div className="text-right flex-shrink-0">
                       <p className="text-2xl font-extrabold text-[#1c1c13]">{p.totalTalks}</p>

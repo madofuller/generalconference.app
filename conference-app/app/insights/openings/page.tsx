@@ -24,6 +24,24 @@ const TYPE_COLORS: Record<string, string> = {
   'other': 'bg-gray-100 text-gray-600',
 };
 
+const TYPE_SWATCH: Record<string, string> = {
+  'greeting': '#bbf7d0',
+  'scripture/quote': '#bfdbfe',
+  'personal story': '#fde68a',
+  'doctrinal statement': '#bae6fd',
+  'gratitude/testimony': '#fef08a',
+  'humor': '#fbcfe8',
+  'question': '#c7d2fe',
+  'historical reference': '#e7e5e4',
+  'reference to speaker': '#e9d5ff',
+  'seasonal/topical': '#99f6e4',
+  'poem/hymn': '#fecdd3',
+  'definition/wordplay': '#a5f3fc',
+  'exhortation': '#fed7aa',
+  'narrative/parable': '#d9f99d',
+  'other': '#e5e7eb',
+};
+
 function classifyOpening(text: string): string {
   const lower = text.toLowerCase();
 
@@ -134,9 +152,18 @@ export default function OpeningsPage() {
   const [data, setData] = useState<TalkOpeningsData | null>(null);
   const { talks: fullTalks, loading: loadingFull } = useFilteredFullTalks();
   const [filterType, setFilterType] = useState<string>('all');
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     loadInsights().then(i => setData(i.talkOpenings || null));
+  }, []);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 640px)');
+    setIsMobile(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
   }, []);
 
   // Build live opening lines from actual talk data
@@ -204,19 +231,34 @@ export default function OpeningsPage() {
             <div className="space-y-4">
               {data.byDecade.map((d: Record<string, unknown>) => {
                 const decade = d.decade as string;
-                const types = Object.entries(d).filter(([k]) => k !== 'decade');
+                const types = Object.entries(d)
+                  .filter(([k]) => k !== 'decade')
+                  .sort((a, b) => (b[1] as number) - (a[1] as number));
+                const topLabels = types.slice(0, isMobile ? 4 : 3);
                 return (
                   <div key={decade}>
                     <p className="text-sm font-bold text-[#1c1c13] mb-2">{decade}</p>
-                    <div className="flex gap-1 h-8 rounded-full overflow-hidden">
-                      {types.sort((a, b) => (b[1] as number) - (a[1] as number)).map(([type, pct]) => (
+                    <div className="flex gap-0.5 h-7 sm:h-8 rounded-full overflow-hidden">
+                      {types.map(([type, pct]) => (
                         <div
                           key={type}
-                          className={`${TYPE_COLORS[type] || 'bg-gray-100'} flex items-center justify-center text-[9px] font-bold`}
-                          style={{ width: `${pct}%`, minWidth: (pct as number) > 5 ? 'auto' : '0' }}
+                          className={`${TYPE_COLORS[type] || 'bg-gray-100'} flex items-center justify-center`}
+                          style={{ width: `${pct}%` }}
                           title={`${type}: ${pct}%`}
-                        >
-                          {(pct as number) > 8 ? `${type} ${pct}%` : ''}
+                        />
+                      ))}
+                    </div>
+                    <div className="mt-1.5 grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-1">
+                      {topLabels.map(([type, pct]) => (
+                        <div key={type} className="text-[10px] leading-tight inline-flex items-center gap-1.5">
+                          <span
+                            className="inline-block w-2.5 h-2.5 rounded-full border border-black/5 shrink-0"
+                            style={{ backgroundColor: TYPE_SWATCH[type] || '#e5e7eb' }}
+                          />
+                          <span className={`px-1.5 py-0.5 rounded ${TYPE_COLORS[type] || 'bg-gray-100 text-gray-600'}`}>
+                            <span className="font-bold">{type}</span>{' '}
+                            <span className="font-bold">{pct as number}%</span>
+                          </span>
                         </div>
                       ))}
                     </div>
