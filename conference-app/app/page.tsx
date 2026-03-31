@@ -35,11 +35,11 @@ const FEATURE_CARDS = [
     href: '/speakers',
     label: 'Speakers',
     title: 'Speaker Insights',
-    description: 'Journey profiles, leaderboards, career paths, fingerprints, and similarity.',
+    description: 'Journey profiles, leaderboards, career paths, and similarity.',
     icon: 'route',
     color: '#f5a623',
     span: 'md:col-span-4',
-    pills: ['Journeys', 'Leaderboard', 'Callings', 'Fingerprint'],
+    pills: ['Journeys', 'Leaderboard', 'Callings', 'Similarity'],
   },
   {
     href: '/scripture-insights',

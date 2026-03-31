@@ -435,8 +435,8 @@ const CONNECTIONS_TEMPLATES = [
     groups: [
       { category: 'First Presidency Counselors', pool: ['Henry B. Eyring', 'Dieter F. Uchtdorf', 'James E. Faust', 'N. Eldon Tanner', 'Marion G. Romney', 'Gordon B. Hinckley', 'Thomas S. Monson', 'Dallin H. Oaks', 'J. Reuben Clark', 'Hugh B. Brown'] },
       { category: 'Relief Society Presidents', pool: ['Eliza R. Snow', 'Emmeline B. Wells', 'Belle S. Spafford', 'Barbara B. Smith', 'Elaine L. Jack', 'Mary Ellen Smoot', 'Bonnie D. Parkin', 'Julie B. Beck', 'Linda K. Burton', 'Jean B. Bingham'] },
-      { category: 'Called as Apostle in 2000s+', pool: ['David A. Bednar', 'Quentin L. Cook', 'Neil L. Andersen', 'Ronald A. Rasband', 'Gary E. Stevenson', 'Dale G. Renlund', 'Gerrit W. Gong', 'Ulisses Soares', 'Patrick Kearon', 'D. Todd Christofferson', 'Clark G. Gilbert'] },
-      { category: 'Presiding Bishops', pool: ['Gérald Caussé', 'Dean M. Davies', 'Keith B. McMullin', 'H. David Burton', 'Merrill J. Bateman', 'Robert D. Hales', 'Victor L. Brown', 'John H. Vandenberg', 'LeGrand Richards', 'Marvin J. Ashton'] },
+      { category: 'Called as Apostle in 2000s+', pool: ['David A. Bednar', 'Quentin L. Cook', 'Neil L. Andersen', 'Ronald A. Rasband', 'Gary E. Stevenson', 'Dale G. Renlund', 'Gerrit W. Gong', 'Ulisses Soares', 'Patrick Kearon', 'D. Todd Christofferson', 'Clark G. Gilbert', 'Gérald Caussé'] },
+      { category: 'Presiding Bishops', pool: ['W. Christopher Waddell', 'Dean M. Davies', 'Keith B. McMullin', 'H. David Burton', 'Merrill J. Bateman', 'Robert D. Hales', 'Victor L. Brown', 'John H. Vandenberg', 'LeGrand Richards', 'Marvin J. Ashton'] },
     ],
   },
   {

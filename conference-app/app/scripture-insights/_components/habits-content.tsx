@@ -32,14 +32,12 @@ function compactSpeakerLabel(name: string): string {
 }
 
 const CURRENT_FIRST_PRESIDENCY_AND_TWELVE = new Set([
-  'Russell M. Nelson',
   'Dallin H. Oaks',
   'Henry B. Eyring',
-  'Jeffrey R. Holland',
+  'D. Todd Christofferson',
   'Dieter F. Uchtdorf',
   'David A. Bednar',
   'Quentin L. Cook',
-  'D. Todd Christofferson',
   'Neil L. Andersen',
   'Ronald A. Rasband',
   'Gary E. Stevenson',
@@ -47,6 +45,8 @@ const CURRENT_FIRST_PRESIDENCY_AND_TWELVE = new Set([
   'Gerrit W. Gong',
   'Ulisses Soares',
   'Patrick Kearon',
+  'Gérald Caussé',
+  'Clark G. Gilbert',
 ]);
 
 export function HabitsContent() {

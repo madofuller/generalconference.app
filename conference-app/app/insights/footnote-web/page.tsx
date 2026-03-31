@@ -132,7 +132,7 @@ export default function FootnoteWebPage() {
           <Card className="mb-4 md:mb-6 border-violet-200 bg-violet-50/50 overflow-hidden">
             <CardContent className="pt-4 md:pt-6">
               <p className="text-sm md:text-lg font-medium text-violet-900">
-                When speakers quote &quot;President Oaks&quot; or &quot;Elder Holland,&quot; they reveal an intellectual lineage.
+                When speakers quote &quot;President Oaks&quot; or &quot;Elder Bednar,&quot; they reveal an intellectual lineage.
                 This page maps who references whom across {talks.length.toLocaleString()} conference talks.
               </p>
             </CardContent>
