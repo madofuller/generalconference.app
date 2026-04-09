@@ -31,16 +31,15 @@ df['conf'] = df.season + ' ' + df.year.astype(str)
 print(f"Loaded {len(df)} talks")
 
 # ============================================================
-# CURRENT CHURCH LEADERSHIP (as of 2025)
+# CURRENT CHURCH LEADERSHIP (as of April 2026)
 # ============================================================
 CURRENT_LEADERS = [
     # First Presidency
     {"name": "Dallin H. Oaks", "calling": "President of the Church", "group": "First Presidency", "ordained_apostle": 1984, "slug": "dallin-h-oaks"},
     {"name": "Henry B. Eyring", "calling": "First Counselor in the First Presidency", "group": "First Presidency", "ordained_apostle": 1995, "slug": "henry-b-eyring"},
-    {"name": "Jeffrey R. Holland", "calling": "Second Counselor in the First Presidency", "group": "First Presidency", "ordained_apostle": 1994, "slug": "jeffrey-r-holland"},
+    {"name": "D. Todd Christofferson", "calling": "Second Counselor in the First Presidency", "group": "First Presidency", "ordained_apostle": 2008, "slug": "d-todd-christofferson"},
     # Quorum of the Twelve
-    {"name": "D. Todd Christofferson", "calling": "Of the Quorum of the Twelve Apostles", "group": "Quorum of the Twelve", "ordained_apostle": 2008, "slug": "d-todd-christofferson"},
-    {"name": "Dieter F. Uchtdorf", "calling": "President of the Quorum of the Twelve", "group": "Quorum of the Twelve", "ordained_apostle": 2004, "slug": "dieter-f-uchtdorf"},
+    {"name": "Dieter F. Uchtdorf", "calling": "Acting President of the Quorum of the Twelve Apostles", "group": "Quorum of the Twelve", "ordained_apostle": 2004, "slug": "dieter-f-uchtdorf"},
     {"name": "David A. Bednar", "calling": "Of the Quorum of the Twelve Apostles", "group": "Quorum of the Twelve", "ordained_apostle": 2004, "slug": "david-a-bednar"},
     {"name": "Quentin L. Cook", "calling": "Of the Quorum of the Twelve Apostles", "group": "Quorum of the Twelve", "ordained_apostle": 2007, "slug": "quentin-l-cook"},
     {"name": "Neil L. Andersen", "calling": "Of the Quorum of the Twelve Apostles", "group": "Quorum of the Twelve", "ordained_apostle": 2009, "slug": "neil-l-andersen"},
@@ -51,6 +50,7 @@ CURRENT_LEADERS = [
     {"name": "Ulisses Soares", "calling": "Of the Quorum of the Twelve Apostles", "group": "Quorum of the Twelve", "ordained_apostle": 2018, "slug": "ulisses-soares"},
     {"name": "Patrick Kearon", "calling": "Of the Quorum of the Twelve Apostles", "group": "Quorum of the Twelve", "ordained_apostle": 2024, "slug": "patrick-kearon"},
     {"name": "Clark G. Gilbert", "calling": "Of the Quorum of the Twelve Apostles", "group": "Quorum of the Twelve", "ordained_apostle": 2025, "slug": "clark-g-gilbert"},
+    {"name": "Gérald Caussé", "calling": "Of the Quorum of the Twelve Apostles", "group": "Quorum of the Twelve", "ordained_apostle": 2026, "slug": "gerald-causse"},
 ]
 
 # Current auxiliary and other general officer leaders (as of 2025)
